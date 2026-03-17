@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Silk Roads & Sea Lanes — AP World History</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+:root{
+  --bg:#f0e6cc;--bg2:#e8d8b0;--ink:#1a1006;--ink2:#3a2a10;
+  --gold:#c8902a;--goldl:#e8b85a;--goldf:#f5e0a0;
+  --red:#8a1818;--teal:#185a4a;--teal2:#2a8a72;
+  --blue:#1a3668;--blue2:#2a56a0;--amb:#b06818;
+  --isl:#1a6a2a;--chr:#7a1040;--bud:#b86000;--hin:#7a2880;
+  --bdr:#c0a06a;--bdr2:#d8c090;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Crimson Pro',serif;background:var(--ink);color:var(--ink);height:100vh;overflow:hidden;}
+
+/* ── LOGIN SCREEN ── */
+#loginScreen{
+  position:fixed;inset:0;z-index:9999;
+  background:linear-gradient(135deg,#0a0804 0%,#1a1206 40%,#0e1a08 100%);
+  display:flex;align-items:center;justify-content:center;
+}
+.login-box{
+  background:#130e06;border:2px solid var(--gold);
+  padding:2.8rem 3rem;width:420px;text-align:center;
+  box-shadow:0 0 60px rgba(200,144,42,.18);
+}
+.login-emblem{font-size:3.5rem;margin-bottom:.6rem;}
+.login-title{font-family:'Cinzel',serif;font-size:1.5rem;color:var(--goldl);font-weight:900;letter-spacing:.08em;margin-bottom:.25rem;}
+.login-sub{font-size:.82rem;color:#8a7040;margin-bottom:2rem;font-family:'JetBrains Mono',monospace;letter-spacing:.05em;}
+.role-btns{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1.5rem;}
+.role-btn{
+  padding:1.1rem;border:2px solid #2a1c08;background:#1a1208;cursor:pointer;
+  font-family:'Cinzel',serif;font-size:.82rem;color:var(--bg);transition:all .2s;
+  display:flex;flex-direction:column;align-items:center;gap:.35rem;
+}
+.role-btn:hover{border-color:var(--gold);background:#221608;}
+.role-btn.selected{border-color:var(--gold);background:#2a1800;color:var(--goldl);}
+.role-btn .rb-icon{font-size:2rem;}
+.role-btn .rb-label{font-size:.75rem;font-weight:700;letter-spacing:.08em;}
+.role-btn .rb-sub{font-size:.62rem;color:#8a7040;font-family:'JetBrains Mono',monospace;}
+.pin-section{margin-bottom:1.4rem;}
+.pin-label{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:#8a7040;text-transform:uppercase;letter-spacing:.12em;margin-bottom:.55rem;}
+.pin-dots{display:flex;gap:.5rem;justify-content:center;margin-bottom:.8rem;}
+.pin-dot{
+  width:14px;height:14px;border-radius:50%;
+  border:2px solid #3a2c10;background:#0e0a04;transition:all .2s;
+}
+.pin-dot.filled{background:var(--gold);border-color:var(--gold);}
+.pin-keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:.45rem;max-width:200px;margin:0 auto;}
+.pin-key{
+  padding:.65rem;font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:700;
+  background:#1a1208;border:1px solid #2a1c08;color:var(--bg);cursor:pointer;
+  transition:all .15s;border-radius:2px;
+}
+.pin-key:hover{background:#2a1c08;border-color:var(--gold);color:var(--goldl);}
+.pin-key:active{transform:scale(.94);}
+.pin-error{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:#c04040;margin-top:.5rem;min-height:1rem;}
+.login-submit{
+  width:100%;padding:.8rem;font-family:'Cinzel',serif;font-size:.88rem;font-weight:700;
+  letter-spacing:.08em;background:var(--gold);color:var(--ink);border:none;cursor:pointer;
+  transition:all .2s;
+}
+.login-submit:hover{background:var(--goldl);}
+.login-submit:disabled{opacity:.4;cursor:not-allowed;}
+
+/* ── HEADER ── */
+.hdr{background:var(--ink);height:50px;display:flex;align-items:center;justify-content:space-between;padding:0 1.4rem;border-bottom:2px solid var(--gold);}
+.hdr h1{font-family:'Cinzel',serif;font-size:.9rem;color:var(--goldl);letter-spacing:.1em;}
+.hdr h1 span{opacity:.5;font-weight:400;font-size:.75rem;margin-left:.6rem;}
+.ebadge{font-family:'JetBrains Mono',monospace;font-size:.65rem;border:1px solid var(--gold);color:var(--goldl);padding:.18rem .6rem;}
+.rind{font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--bg);opacity:.55;}
+.user-badge{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--goldl);background:#2a1800;border:1px solid var(--gold);padding:.18rem .65rem;display:flex;align-items:center;gap:.35rem;}
+
+/* ── LAYOUT ── */
+.app{display:flex;height:calc(100vh - 50px);}
+.sb{width:248px;min-width:248px;background:#0e0a04;border-right:2px solid var(--gold);display:flex;flex-direction:column;overflow-y:auto;}
+.sbs{padding:.8rem .9rem;border-bottom:1px solid #221808;}
+.sbs h3{font-family:'JetBrains Mono',monospace;font-size:.56rem;letter-spacing:.17em;text-transform:uppercase;color:var(--gold);margin-bottom:.55rem;}
+.ci{display:flex;align-items:center;gap:.5rem;padding:.38rem .5rem;cursor:pointer;border-left:3px solid transparent;margin-bottom:.1rem;transition:background .12s;}
+.ci:hover{background:#1a1004;}
+.ci.act{background:#1a1000;border-left-color:var(--gold);}
+.ce{font-size:1rem;width:18px;text-align:center;}
+.cn{font-size:.8rem;color:var(--bg);}
+.cs{font-size:.58rem;color:#7a6030;font-family:'JetBrains Mono',monospace;display:block;}
+.cd{margin-left:auto;width:6px;height:6px;border-radius:50%;background:#2a2010;flex-shrink:0;}
+.cd.ok{background:var(--teal2);} .cd.wip{background:var(--amb);}
+.nb{width:100%;padding:.5rem .7rem;border:1px solid #221808;background:transparent;color:var(--bg);font-family:'JetBrains Mono',monospace;font-size:.65rem;cursor:pointer;text-align:left;transition:all .12s;margin-bottom:.25rem;display:flex;align-items:center;gap:.4rem;}
+.nb:hover{background:#1a1004;border-color:var(--gold);}
+.nb.act{background:var(--gold);color:var(--ink);font-weight:600;border-color:var(--gold);}
+
+/* ── MAIN ── */
+.main{flex:1;overflow-y:auto;background:var(--bg);}
+.view{display:none;}
+.view.act{display:block;}
+
+/* ── BUTTONS ── */
+.btn{padding:.6rem 1.3rem;font-family:'JetBrains Mono',monospace;font-size:.72rem;cursor:pointer;border:none;font-weight:500;transition:all .15s;}
+.bg{background:var(--gold);color:var(--ink);} .bg:hover{background:var(--goldl);}
+.bd{background:var(--ink);color:var(--bg);border:1px solid #3a2808;} .bd:hover{border-color:var(--gold);}
+.br{background:var(--red);color:#fff;} .br:hover{background:#a02020;}
+.bt{background:var(--teal);color:#fff;} .bt:hover{background:var(--teal2);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.card{background:#fff;border:1px solid var(--bdr2);border-top:3px solid var(--gold);padding:1.2rem;}
+.card h2{font-family:'Cinzel',serif;font-size:.92rem;margin-bottom:.65rem;font-weight:700;}
+.cfu{grid-column:1/-1;}
+.tabs{display:flex;border-bottom:2px solid var(--bdr2);margin-bottom:1.1rem;flex-wrap:wrap;}
+.tab{padding:.45rem .8rem;font-family:'JetBrains Mono',monospace;font-size:.62rem;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;color:#7a6030;transition:all .12s;}
+.tab:hover{color:var(--ink);}
+.tab.act{border-bottom-color:var(--blue);color:var(--blue);font-weight:600;}
+.pane{display:none;}
+.pane.act{display:block;}
+
+/* ── MAP VIEW ── */
+#vnetwork{padding:0;display:flex;flex-direction:column;height:100%;}
+.mtb{display:flex;align-items:center;gap:.5rem;padding:.6rem .9rem;background:var(--ink);border-bottom:1px solid #221808;flex-wrap:wrap;flex-shrink:0;}
+.mtb h3{font-family:'Cinzel',serif;font-size:.85rem;color:var(--goldl);font-weight:700;margin-right:.4rem;}
+.lb{font-family:'JetBrains Mono',monospace;font-size:.6rem;padding:.24rem .55rem;border:1px solid #3a2808;background:transparent;color:var(--bg);cursor:pointer;transition:all .12s;}
+.lb:hover{border-color:var(--gold);color:var(--goldl);}
+.lb.on{background:#2a1800;border-color:var(--gold);color:var(--goldl);}
+.lb.ri.on{border-color:var(--isl);background:#0a1a08;color:#7ada90;}
+.lb.rb.on{border-color:var(--bud);background:#1a0e00;color:#f0b050;}
+#mapDiv{height:380px;width:100%;position:relative;z-index:1;}
+#vnetwork{display:flex;flex-direction:column;}
+.mleg{padding:.5rem .9rem;background:#0e0a04;border-top:1px solid #221808;display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;flex-shrink:0;}
+.li{display:flex;align-items:center;gap:.28rem;font-family:'JetBrains Mono',monospace;font-size:.58rem;color:#c0a060;}
+.lld{width:8px;height:8px;border-radius:50%;}
+.lll{width:20px;height:3px;}
+.tlog{background:#fff;border-top:2px solid var(--gold);padding:.85rem;max-height:150px;overflow-y:auto;flex-shrink:0;}
+.tlog h3{font-family:'Cinzel',serif;font-size:.8rem;font-weight:700;margin-bottom:.5rem;}
+.te{display:flex;gap:.6rem;padding:.35rem 0;border-bottom:1px solid var(--bdr2);font-size:.77rem;align-items:flex-start;}
+.te:last-child{border-bottom:none;}
+.ter{font-family:'JetBrains Mono',monospace;font-size:.57rem;color:#7a6030;}
+
+/* Leaflet custom marker */
+.civ-marker{
+  background:var(--ink);border:2.5px solid var(--gold);border-radius:50%;
+  width:36px;height:36px;display:flex;align-items:center;justify-content:center;
+  font-size:16px;cursor:pointer;transition:all .2s;
+  box-shadow:0 0 10px rgba(200,144,42,.35);
+}
+@keyframes civPulse{0%,100%{box-shadow:0 0 10px rgba(200,144,42,.35);}50%{box-shadow:0 0 22px rgba(200,144,42,.7);}}
+.civ-marker.active{border-color:var(--goldl);background:#2a1800;box-shadow:0 0 18px rgba(232,184,90,.55);transform:scale(1.15);animation:civPulse 2s ease infinite;}
+.civ-marker.traded{border-color:var(--teal2);box-shadow:0 0 10px rgba(42,138,114,.35);}
+.leaflet-popup-content-wrapper{background:var(--ink);border:1px solid var(--gold);border-radius:2px;box-shadow:0 4px 20px rgba(0,0,0,.5);}
+.leaflet-popup-content{color:var(--bg);font-family:'Crimson Pro',serif;margin:.7rem .9rem;}
+.leaflet-popup-tip{background:var(--gold);}
+.leaflet-popup-close-button{color:var(--gold)!important;}
+
+/* ── STUDENT VIEW ── */
+.chdr{display:flex;align-items:center;gap:1.1rem;padding:1.1rem 1.5rem;background:var(--ink);border-bottom:3px solid var(--gold);}
+.che{font-size:2.4rem;}
+.chn{font-family:'Cinzel',serif;font-size:1.35rem;color:var(--goldl);font-weight:900;}
+.chs{font-size:.82rem;color:#7a6030;margin-top:.1rem;}
+.rpill{font-size:.6rem;padding:.1rem .42rem;border-radius:7px;font-family:'JetBrains Mono',monospace;border:1px solid currentColor;}
+.gstrip{display:grid;grid-template-columns:repeat(4,1fr);gap:.7rem;padding:.95rem 1.5rem;background:var(--bg2);border-bottom:1px solid var(--bdr);}
+.gc{background:#fff;border:1px solid var(--bdr2);border-top:3px solid var(--amb);padding:.8rem;text-align:center;position:relative;}
+.gci{font-size:1.4rem;margin-bottom:.22rem;}
+.gcn{font-family:'Cinzel',serif;font-size:.68rem;font-weight:700;margin-bottom:.1rem;}
+.gcq{font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:700;color:var(--gold);}
+.gcl{font-size:.57rem;color:#7a6030;font-family:'JetBrains Mono',monospace;}
+.gcup{position:absolute;top:4px;right:6px;font-size:.6rem;color:var(--teal2);font-family:'JetBrains Mono',monospace;font-weight:700;}
+
+/* Inventory growth banner */
+.inv-growth-banner{background:#edfaf4;border:2px solid var(--teal2);border-left:6px solid var(--teal);padding:.8rem 1.2rem;margin:0 1.5rem .8rem;display:flex;align-items:center;gap:.8rem;animation:fadeUp .4s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(-5px);}to{opacity:1;transform:translateY(0);}}
+.invs{padding:.8rem 1.5rem;background:var(--bg);border-bottom:1px solid var(--bdr);}
+.invs h3{font-family:'Cinzel',serif;font-size:.8rem;font-weight:700;margin-bottom:.52rem;color:var(--ink2);}
+.invg{display:flex;gap:.5rem;flex-wrap:wrap;}
+.icard{border:2px solid var(--bdr2);padding:.6rem .75rem;background:var(--bg2);min-width:110px;position:relative;transition:all .2s;}
+.icard.lk{opacity:.48;filter:grayscale(.55);}
+.icard.ul{border-color:var(--gold);background:var(--goldf);box-shadow:0 0 8px rgba(200,144,42,.22);}
+.icard.ul .ilk{display:none;}
+.ilk{position:absolute;top:2px;right:3px;font-size:.68rem;opacity:.4;}
+.ii{font-size:1.25rem;margin-bottom:.2rem;}
+.inm{font-family:'Cinzel',serif;font-size:.67rem;font-weight:700;margin-bottom:.1rem;}
+.irq{font-size:.57rem;color:#5a4820;font-family:'JetBrains Mono',monospace;line-height:1.3;}
+.ibn{font-size:.6rem;color:var(--teal);font-family:'JetBrains Mono',monospace;margin-top:.16rem;}
+.ibar{height:3px;background:var(--bdr2);margin-top:.32rem;}
+.ibf{height:3px;background:var(--gold);transition:width .5s;}
+.relp{background:#fff;border:1px solid var(--bdr2);padding:.85rem 1.5rem;margin:0 1.5rem 1rem;}
+.relp h3{font-family:'Cinzel',serif;font-size:.83rem;font-weight:700;margin-bottom:.45rem;}
+.rcn{font-size:.67rem;padding:.2rem .6rem;border-radius:3px;border:1px solid currentColor;font-family:'JetBrains Mono',monospace;display:inline-block;margin:.15rem;}
+.evba{background:#fdf6e8;border:2px solid var(--gold);border-left:6px solid var(--red);padding:.88rem 1.2rem;margin:1rem 1.5rem;display:flex;gap:.75rem;align-items:flex-start;}
+.evu{font-family:'JetBrains Mono',monospace;font-size:.55rem;color:var(--red);text-transform:uppercase;letter-spacing:.09em;margin-bottom:.18rem;}
+.evt{font-family:'Cinzel',serif;font-weight:700;font-size:.9rem;margin-bottom:.25rem;}
+.evb{font-size:.82rem;color:#4a3818;line-height:1.48;}
+.tsec{background:#fff;border:1px solid var(--bdr2);border-top:3px solid var(--blue);padding:1.1rem 1.5rem;margin:0 1.5rem 1.1rem;}
+.tsec h2{font-family:'Cinzel',serif;font-size:.9rem;margin-bottom:.2rem;font-weight:700;}
+.ssub{font-size:.77rem;color:#5a4820;margin-bottom:.85rem;}
+.sth{font-family:'JetBrains Mono',monospace;font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.42rem;margin-top:.8rem;}
+.sbl{color:var(--blue);} .sam{color:var(--amb);} .sgo{color:var(--gold);} .stl{color:var(--teal);} .sis{color:var(--isl);}
+.rg{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;}
+.ro{border:2px solid var(--bdr2);padding:.82rem;cursor:pointer;background:var(--bg2);position:relative;transition:all .15s;}
+.ro:hover{border-color:var(--blue2);background:var(--bg);}
+.ro.sel{border-color:var(--blue);background:#eff4ff;}
+.ro.sel::after{content:'✦';position:absolute;top:.35rem;right:.5rem;color:var(--blue);font-size:.75rem;}
+.rtl{color:var(--amb);} .rts{color:var(--blue2);}
+.rty{font-family:'JetBrains Mono',monospace;font-size:.54rem;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.16rem;}
+.rtn{font-family:'Cinzel',serif;font-size:.78rem;font-weight:700;margin-bottom:.16rem;}
+.rtd{font-size:.7rem;color:#5a4820;line-height:1.36;}
+.rtt{margin-top:.3rem;display:flex;flex-wrap:wrap;gap:.2rem;}
+.tag{font-size:.58rem;padding:.09rem .38rem;background:var(--bg);border:1px solid var(--bdr);color:#5a4820;font-family:'JetBrains Mono',monospace;}
+.tagr{border-color:currentColor;}
+.gsg{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;}
+.gsb{border:2px solid var(--bdr2);padding:.58rem;cursor:pointer;background:var(--bg2);text-align:center;position:relative;transition:all .15s;}
+.gsb:hover{border-color:var(--amb);}
+.gsb.sel{border-color:var(--amb);background:#fff6e8;}
+.gsb.sel::after{content:'✦';position:absolute;top:2px;right:3px;color:var(--amb);font-size:.6rem;}
+.gsi{font-size:1.18rem;}.gsn{font-size:.62rem;font-family:'JetBrains Mono',monospace;margin-top:.14rem;}
+.pg{display:flex;flex-wrap:wrap;gap:.4rem;}
+.pb{padding:.34rem .68rem;border:2px solid var(--bdr2);background:var(--bg2);cursor:pointer;font-size:.77rem;transition:all .15s;display:flex;align-items:center;gap:.25rem;}
+.pb:hover{border-color:var(--gold);}
+.pb.sel{border-color:var(--gold);background:var(--goldf);}
+.pb.rm{border-style:dashed;border-color:var(--isl);}
+.ctags{display:flex;flex-wrap:wrap;gap:.26rem;}
+.ct{font-family:'JetBrains Mono',monospace;font-size:.57rem;padding:.14rem .44rem;background:var(--bg2);border:1px solid var(--bdr2);color:#5a4820;cursor:pointer;transition:all .1s;}
+.ct:hover{border-color:var(--blue2);color:var(--blue);}
+.ct.on{background:var(--blue);border-color:var(--blue);color:#fff;}
+.jarea{margin-top:.82rem;}
+.jarea label{display:block;font-family:'JetBrains Mono',monospace;font-size:.58rem;text-transform:uppercase;letter-spacing:.07em;color:#5a4820;margin-bottom:.4rem;}
+.jarea textarea{width:100%;border:1px solid var(--bdr);padding:.68rem;font-family:'Crimson Pro',serif;font-size:.86rem;resize:vertical;min-height:82px;background:var(--bg);line-height:1.58;color:var(--ink);}
+.jarea textarea:focus{outline:2px solid var(--blue);background:#fff;}
+.aifb{background:#eef8f2;border:1px solid #a0d0b0;border-left:4px solid var(--teal);padding:.95rem 1.2rem;margin-top:.82rem;animation:fadeUp .3s ease;}
+.aifbh{font-family:'JetBrains Mono',monospace;font-size:.57rem;text-transform:uppercase;color:var(--teal);margin-bottom:.45rem;display:flex;align-items:center;gap:.38rem;}
+.aifbb{font-size:.86rem;line-height:1.6;}
+.ldot{display:inline-block;width:6px;height:6px;background:var(--teal);border-radius:50%;animation:glo 1s infinite;margin-right:3px;}
+@keyframes glo{0%,100%{opacity:1;}50%{opacity:.3;}}
+.conp{background:var(--goldf);border:2px solid var(--gold);border-left:6px solid var(--teal);padding:.95rem 1.2rem;margin-top:.82rem;animation:fadeUp .3s ease;}
+.cont{font-family:'JetBrains Mono',monospace;font-size:.57rem;text-transform:uppercase;color:var(--teal);letter-spacing:.1em;margin-bottom:.6rem;}
+.cong{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:.6rem;}
+.cs2{text-align:center;padding:.5rem;background:#fff;border:1px solid var(--bdr2);}
+.csl{font-size:.55rem;color:#5a4820;font-family:'JetBrains Mono',monospace;text-transform:uppercase;margin-bottom:.1rem;}
+.csv{font-size:.87rem;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.up{color:var(--teal);}.dn{color:var(--red);}.ne{color:#7a6030;}
+.uf{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--ink);border:3px solid var(--gold);padding:1.7rem 2rem;z-index:9999;text-align:center;max-width:300px;}
+.ufi{font-size:2.6rem;margin-bottom:.4rem;}
+.uft{font-family:'Cinzel',serif;font-size:1rem;color:var(--goldl);font-weight:900;margin-bottom:.25rem;}
+.ufb{font-size:.8rem;color:var(--bg);line-height:1.48;}
+
+/* ── TEACHER ── */
+#vteacher{padding:1.5rem;}
+.dg{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;margin-bottom:1.3rem;}
+.eg{display:grid;grid-template-columns:1fr 1fr;gap:.58rem;}
+.evc{border:1px solid var(--bdr2);padding:.78rem;cursor:pointer;background:var(--bg2);transition:all .15s;}
+.evc:hover{border-color:var(--gold);background:var(--bg);transform:translateY(-1px);}
+.evc.sel{border-color:var(--red);background:#fff0ee;}
+.evu2{font-family:'JetBrains Mono',monospace;font-size:.54rem;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);margin-bottom:.18rem;}
+.evt2{font-family:'Cinzel',serif;font-size:.78rem;font-weight:700;margin-bottom:.18rem;}
+.evd{font-size:.7rem;color:#5a4820;line-height:1.36;}
+.rtb{width:100%;border-collapse:collapse;font-size:.76rem;}
+.rtb th{background:var(--ink);color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:.55rem;padding:.45rem .7rem;text-align:left;text-transform:uppercase;letter-spacing:.08em;}
+.rtb td{padding:.45rem .7rem;border-bottom:1px solid var(--bdr2);}
+.rtb tr:hover td{background:var(--bg2);}
+.aevb{background:var(--red);color:#fff;padding:.5rem 1rem;font-family:'JetBrains Mono',monospace;font-size:.65rem;display:flex;align-items:center;gap:.45rem;}
+
+/* ── DEBRIEF ── */
+#vdebrief{padding:1.5rem;}
+.dbc{border:1px solid var(--bdr2);background:var(--bg2);padding:.8rem .95rem;margin-bottom:.6rem;display:grid;grid-template-columns:auto 1fr auto;gap:.8rem;align-items:start;}
+.dbe{font-size:1.35rem;}
+.dbr{font-family:'JetBrains Mono',monospace;font-size:.57rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.18rem;color:var(--blue);}
+.dbj{font-size:.77rem;color:#4a3818;line-height:1.45;margin-top:.18rem;font-style:italic;}
+.dbsb{font-family:'JetBrains Mono',monospace;font-size:1.15rem;font-weight:700;color:var(--blue);text-align:right;}
+.dbsl{font-size:.55rem;color:#7a6030;font-family:'JetBrains Mono',monospace;}
+.sinp{width:48px;padding:.24rem .36rem;border:1px solid var(--bdr);font-family:'JetBrains Mono',monospace;font-size:.78rem;text-align:center;background:var(--bg);}
+.se{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:.8rem;padding:.68rem 0;border-bottom:1px solid var(--bdr2);font-size:.77rem;}
+.gb2{font-family:'JetBrains Mono',monospace;font-size:.6rem;padding:.13rem .45rem;border-radius:2px;}
+.ga{background:#eef9f2;color:var(--teal);border:1px solid var(--teal);}
+.gbb{background:#eef2ff;color:var(--blue);border:1px solid var(--blue);}
+.gc2{background:#fefce6;color:#7a5800;border:1px solid var(--gold);}
+.gd{background:#fff0ee;color:var(--red);border:1px solid var(--red);}
+.hmg{display:grid;grid-template-columns:repeat(4,1fr);gap:.35rem;margin-top:.6rem;}
+.hmc{padding:.45rem;text-align:center;border-radius:2px;font-family:'JetBrains Mono',monospace;font-size:.55rem;}
+.hml{font-weight:600;margin-bottom:.1rem;font-size:.55rem;} .hmv{font-size:.85rem;font-weight:700;}
+
+/* ── SETUP ── */
+#vsetup{background:var(--ink);min-height:100%;padding:2rem 1.6rem;color:var(--bg);}
+.sh2{font-family:'Cinzel',serif;font-size:1.75rem;color:var(--goldl);font-weight:900;letter-spacing:.07em;margin-bottom:.4rem;line-height:1.2;}
+.etag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:.68rem;border:1px solid var(--gold);color:var(--gold);padding:.2rem .8rem;margin-bottom:1.1rem;}
+.us{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.6rem;}
+.uc{background:#181006;border:1px solid #2a1c08;border-top:3px solid var(--gold);padding:.95rem;}
+.ul2{font-family:'JetBrains Mono',monospace;font-size:.56rem;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;margin-bottom:.26rem;}
+.ut{font-family:'Cinzel',serif;font-size:.82rem;color:var(--bg);font-weight:700;margin-bottom:.35rem;}
+.ud{font-size:.74rem;color:#7a6030;line-height:1.42;}
+.scg{display:grid;grid-template-columns:repeat(3,1fr);gap:.65rem;margin-bottom:1.6rem;}
+.scc{background:#181006;border:2px solid #2a1c08;padding:.82rem;cursor:pointer;transition:all .2s;position:relative;}
+.scc:hover{border-color:var(--gold);background:#221408;transform:translateY(-2px);}
+.scc.sel{border-color:var(--gold);background:#281800;}
+.scc.sel::after{content:'✦';position:absolute;top:.4rem;right:.5rem;color:var(--gold);}
+.sce{font-size:1.6rem;margin-bottom:.35rem;}
+.scn{font-family:'Cinzel',serif;font-size:.8rem;color:var(--goldl);font-weight:700;margin-bottom:.14rem;}
+.scr{font-family:'JetBrains Mono',monospace;font-size:.55rem;color:#5a4018;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.35rem;}
+.scd{font-size:.71rem;color:#7a6030;line-height:1.36;margin-bottom:.4rem;}
+.scrl{font-size:.6rem;color:#907840;font-family:'JetBrains Mono',monospace;margin-bottom:.38rem;}
+.scgds{display:flex;flex-wrap:wrap;gap:.2rem;}
+.gtag{font-size:.6rem;padding:.09rem .4rem;background:#2a1c08;border:1px solid #3a2c10;color:#a08040;font-family:'JetBrains Mono',monospace;}
+
+.notif{position:fixed;top:60px;right:16px;background:var(--ink);color:var(--goldl);padding:.6rem 1rem;font-family:'JetBrains Mono',monospace;font-size:.67rem;border-left:4px solid var(--gold);z-index:9998;max-width:260px;}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:3px;}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ LOGIN SCREEN ═══════════════════════════════ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-emblem">🗺️</div>
+    <div class="login-title">Silk Roads &amp; Sea Lanes</div>
+    <div class="login-sub">AP World History · c. 1200–1450 CE</div>
+
+    <div class="role-btns">
+      <div class="role-btn" id="roleTeacher" onclick="selectRole('teacher')">
+        <span class="rb-icon">📋</span>
+        <span class="rb-label">TEACHER</span>
+        <span class="rb-sub">Dashboard access</span>
+      </div>
+      <div class="role-btn" id="roleStudent" onclick="selectRole('student')">
+        <span class="rb-icon">🏛️</span>
+        <span class="rb-label">STUDENT</span>
+        <span class="rb-sub">Play simulation</span>
+      </div>
+    </div>
+
+    <div class="pin-section">
+      <div class="pin-label" id="pinLabel">Select a role above</div>
+      <div class="pin-dots" id="pinDots">
+        <div class="pin-dot" id="d0"></div>
+        <div class="pin-dot" id="d1"></div>
+        <div class="pin-dot" id="d2"></div>
+        <div class="pin-dot" id="d3"></div>
+        <div class="pin-dot" id="d4"></div>
+      </div>
+      <div class="pin-keypad" id="pinKeypad">
+        <button class="pin-key" onclick="pinKey('1')">1</button>
+        <button class="pin-key" onclick="pinKey('2')">2</button>
+        <button class="pin-key" onclick="pinKey('3')">3</button>
+        <button class="pin-key" onclick="pinKey('4')">4</button>
+        <button class="pin-key" onclick="pinKey('5')">5</button>
+        <button class="pin-key" onclick="pinKey('6')">6</button>
+        <button class="pin-key" onclick="pinKey('7')">7</button>
+        <button class="pin-key" onclick="pinKey('8')">8</button>
+        <button class="pin-key" onclick="pinKey('9')">9</button>
+        <button class="pin-key" onclick="pinClear()" style="font-size:.75rem;color:#c04040;">✕</button>
+        <button class="pin-key" onclick="pinKey('0')">0</button>
+        <button class="pin-key" onclick="pinSubmit()" style="font-size:.75rem;color:var(--goldl);">↵</button>
+      </div>
+      <div class="pin-error" id="pinError"></div>
+    </div>
+
+    <button class="login-submit" id="loginSubmitBtn" onclick="pinSubmit()" disabled>Enter ✦</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ MAIN APP ═══════════════════════════════ -->
+<div id="appShell" style="display:none;">
+<div class="hdr">
+  <div style="display:flex;align-items:center;gap:.8rem;"><span style="font-size:1.3rem;">🗺️</span><h1>Silk Roads &amp; Sea Lanes<span>AP World History · Units 2, 3 &amp; 4</span></h1></div>
+  <div style="display:flex;align-items:center;gap:.6rem;">
+    <span class="ebadge">c. 1200–1450 CE</span>
+    <span class="rind" id="rind">Round 1 of 3</span>
+    <span class="user-badge" id="userBadge">👤 —</span>
+    <button onclick="logout()" style="font-family:'JetBrains Mono',monospace;font-size:.58rem;padding:.18rem .55rem;background:transparent;border:1px solid #3a2808;color:#8a7040;cursor:pointer;">⬅ Exit</button>
+  </div>
+</div>
+
+<div class="app">
+<div class="sb">
+  <div class="sbs"><h3>🏛 Civilizations</h3><div id="civList"></div></div>
+  <div class="sbs" id="teacherNavSec">
+    <h3>⚙ Navigation</h3>
+    <button class="nb act" id="nbTeacher" onclick="nav('teacher')">📋 Dashboard</button>
+    <button class="nb" id="nbNetwork" onclick="nav('network')">🌍 World Map</button>
+    <button class="nb" id="nbDebrief" onclick="nav('debrief')">📜 Debrief</button>
+  </div>
+  <div class="sbs">
+    <h3>📚 AP Units</h3>
+    <div style="font-size:.7rem;color:#7a6030;line-height:1.72;font-family:'Crimson Pro',serif;">
+      <div><span style="color:var(--gold);">Unit 2</span> · Networks of Exchange</div>
+      <div><span style="color:var(--gold);">Unit 3</span> · Land-Based Empires</div>
+      <div><span style="color:var(--gold);">Unit 4</span> · Transoceanic Connections</div>
+    </div>
+  </div>
+  <div class="sbs" id="teacherRoundSec">
+    <h3>⏩ Round</h3>
+    <div id="rstatus" style="font-size:.67rem;color:#7a6030;font-family:'JetBrains Mono',monospace;margin-bottom:.48rem;">Round 1 active</div>
+    <button class="btn bg" style="width:100%;font-size:.64rem;padding:.44rem;" onclick="advRound()">Advance Round →</button>
+  </div>
+</div>
+
+<div class="main">
+<!-- TEACHER DASHBOARD -->
+<div class="view act" id="vteacher">
+  <div id="aevb" style="display:none;" class="aevb">⚡ <span id="aevt"></span></div>
+  <h2 style="font-family:'Cinzel',serif;font-size:1.3rem;font-weight:900;color:var(--ink2);margin-bottom:.28rem;">Teacher Dashboard</h2>
+  <p style="font-size:.85rem;color:#5a4820;margin-bottom:1.3rem;">Manage the simulation, trigger historical events, and track student trade decisions.</p>
+  <div class="dg">
+    <div class="card"><h2>🏛 Civilizations Roster</h2><table class="rtb"><thead><tr><th>Civilization</th><th>Religion(s)</th><th>Goods (current)</th><th>Status</th></tr></thead><tbody id="rosterBody"></tbody></table></div>
+    <div class="card"><h2>📊 Status</h2><div id="simStats" style="font-size:.85rem;line-height:2;color:var(--ink2);"></div></div>
+    <div class="card cfu"><h2>⚡ Historical Events</h2><p style="font-size:.77rem;color:#5a4820;margin-bottom:.82rem;">Activate an event — all students must adapt their trade strategy in response.</p><div class="eg" id="evGrid"></div><div style="margin-top:.8rem;display:flex;gap:.6rem;align-items:center;"><button class="btn br" onclick="activateEv()">⚡ Activate</button><button class="btn bd" onclick="clearEv()">✕ Clear</button><span id="aevlabel" style="font-family:'JetBrains Mono',monospace;font-size:.66rem;color:#5a4820;"></span></div></div>
+    <div class="card cfu"><h2>🌐 Trade Decisions This Round</h2><div id="tradeSumm" style="font-size:.82rem;color:#5a4820;"></div></div>
+  </div>
+</div>
+
+<!-- SETUP / CIV SELECTION -->
+<div class="view" id="vsetup">
+  <div style="text-align:center;margin-bottom:2rem;padding-bottom:1.6rem;border-bottom:1px solid #2a1c08;">
+    <div style="font-size:3rem;margin-bottom:.6rem;">🌍</div>
+    <div class="etag">1200 – 1450 CE</div>
+    <div class="sh2">Choose Your Civilization</div>
+    <p style="font-size:.95rem;color:#c4a060;max-width:520px;margin:0 auto;line-height:1.55;">Trade goods, forge alliances, unlock innovations, and discover how religion shaped every route across the medieval world.</p>
+  </div>
+  <div class="us">
+    <div class="uc"><div class="ul2">Unit 2</div><div class="ut">Networks of Exchange</div><div class="ud">Silk Roads, Indian Ocean, and trans-Saharan networks carry goods, ideas, religions, and disease across Afro-Eurasia.</div></div>
+    <div class="uc"><div class="ul2">Unit 3</div><div class="ut">Land-Based Empires</div><div class="ud">Mongol, Mali, Ottoman, and Delhi empires control trade chokepoints, tax caravans, and expand through military conquest.</div></div>
+    <div class="uc"><div class="ul2">Unit 4</div><div class="ut">Transoceanic Connections</div><div class="ud">Maritime technology expands the Indian Ocean; Zheng He's voyages and Arab dhow captains reshape sea commerce.</div></div>
+  </div>
+  <div class="scg" id="setupGrid"></div>
+  <div style="text-align:center;margin-top:1.2rem;"><button class="btn bg" style="font-size:.84rem;padding:.85rem 2rem;" onclick="confirmCiv()">Begin Simulation ✦</button></div>
+</div>
+
+<!-- STUDENT GAMEPLAY -->
+<div class="view" id="vstudent">
+  <div id="civHdr"></div>
+  <div id="stuEvAlert" style="display:none;"></div>
+  <div id="invGrowthBanner" style="display:none;"></div>
+  <div class="gstrip" id="goodsStrip"></div>
+  <div class="invs"><h3>⚗ Innovations — unlock by trading with required partners</h3><div class="invg" id="invGrid"></div></div>
+  <div id="relPanel"></div>
+  <div class="tsec">
+    <h2>Trade Decision</h2>
+    <p class="ssub">Complete all steps, then submit your trade with historical justification.</p>
+    <div class="sth sbl">① Select a Trade Route</div>
+    <div class="rg" id="routeGrid"></div>
+    <div class="sth sam">② Choose Goods to Export (up to 3)</div>
+    <div class="gsg" id="goodSel"></div>
+    <div class="sth sgo">③ Select a Trading Partner</div>
+    <div class="pg" id="partnerGrid"></div>
+    <div class="sth sis">④ Religion &amp; Trade — does shared faith create an advantage?</div>
+    <div id="relAdv" style="font-size:.79rem;color:#4a3818;padding:.45rem .65rem;background:var(--bg2);border-left:3px solid var(--isl);margin-bottom:.62rem;line-height:1.48;"></div>
+    <div class="sth stl">⑤ AP World Concepts Applied</div>
+    <div class="ctags" id="ctags"></div>
+    <div class="jarea">
+      <label>⑥ Historical Justification (min. 2–3 sentences with specific evidence)</label>
+      <textarea id="justTxt" placeholder="Example: I chose the Silk Road to trade silk with the Mongol Empire because the Pax Mongolica made overland routes safe for merchants in the 13th century..."></textarea>
+    </div>
+    <div style="margin-top:.82rem;display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;">
+      <button class="btn bt" onclick="submitTrade()">Submit Trade ✦</button>
+      <button class="btn bd" onclick="getAI()" id="aibtn">🤖 Tutor Feedback</button>
+      <span id="subst" style="font-family:'JetBrains Mono',monospace;font-size:.66rem;color:#5a4820;"></span>
+    </div>
+    <div id="aiArea"></div><div id="conArea"></div><div id="cmpArea"></div>
+  </div>
+</div>
+
+<!-- WORLD MAP -->
+<div class="view" id="vnetwork" style="height:100%;display:flex;flex-direction:column;">
+  <div class="mtb">
+    <h3>🗺 World Map c. 1200–1450</h3>
+    <button class="lb on" id="lbTrade" onclick="togL('trade')">🐪 Trade Routes</button>
+    <button class="lb on" id="lbRel" onclick="togL('rel')">🕌 Religion Zones</button>
+    <button class="lb ri" id="lbIsl" onclick="togL('isl')">☪ Islamic Routes</button>
+    <button class="lb rb" id="lbBud" onclick="togL('bud')">☸ Buddhist Routes</button>
+    <button class="lb" id="lbStu" onclick="togL('stu')">📍 Student Trades</button>
+  </div>
+  <div id="mapDiv"></div>
+  <div class="mleg">
+    <div class="li"><div class="lll" style="background:#c8902a;opacity:.3;"></div><span style="opacity:.55;">Silk Road (unused)</span></div>
+    <div class="li"><div class="lll" style="background:#c8902a;height:4px;"></div>Silk Road (active)</div>
+    <div class="li"><div class="lll" style="background:#3060a8;"></div>Indian Ocean</div>
+    <div class="li"><div class="lll" style="background:#b06818;"></div>Trans-Saharan</div>
+    <div class="li"><div class="lll" style="background:#7050a0;"></div>Mediterranean</div>
+    <div class="li" style="border-left:2px solid #c8902a;padding-left:.4rem;"><span style="font-size:.56rem;color:#c8902a;">Routes glow bold when a student completes a trade on them</span></div>
+    <div class="li"><div class="lld" style="background:#1a6a2a;"></div>Islam zone</div>
+    <div class="li"><div class="lld" style="background:#b86000;"></div>Buddhist zone</div>
+    <div class="li"><div class="lld" style="background:#7a1040;"></div>Christian zone</div>
+    <div class="li"><div class="lld" style="background:#7a2880;"></div>Hindu zone</div>
+  </div>
+  <div class="tlog"><h3>📜 Trade Record — Round <span id="logRnd">1</span></h3><div id="tlogEntries"><div style="color:#7a6030;font-size:.8rem;font-style:italic;">No trades yet.</div></div></div>
+</div>
+
+<!-- DEBRIEF -->
+<div class="view" id="vdebrief">
+  <h2 style="font-family:'Cinzel',serif;font-size:1.28rem;font-weight:900;color:var(--ink2);margin-bottom:.26rem;">📜 Debrief &amp; Assessment</h2>
+  <p style="font-size:.84rem;color:#5a4820;margin-bottom:1.1rem;">Review decisions, score justifications, check inventions, and discuss.</p>
+  <div class="tabs">
+    <div class="tab act" onclick="switchTab('decisions')">Decisions</div>
+    <div class="tab" onclick="switchTab('inventions')">🔭 Inventions</div>
+    <div class="tab" onclick="switchTab('scoring')">Scoring</div>
+    <div class="tab" onclick="switchTab('concepts')">Concepts</div>
+    <div class="tab" onclick="switchTab('religion')">⛪ Religion</div>
+    <div class="tab" onclick="switchTab('discuss')">Discussion</div>
+  </div>
+  <div class="pane act" id="tab-decisions"><div id="dbCards"></div></div>
+  <div class="pane" id="tab-inventions"><div id="dbInv"></div></div>
+  <div class="pane" id="tab-scoring"><div class="card"><h2>🎯 Score Justifications</h2><div id="scorePanel"></div></div></div>
+  <div class="pane" id="tab-concepts"><div class="card"><h2>🧠 Concept Usage</h2><p style="font-size:.77rem;color:#5a4820;margin-bottom:.62rem;">Which AP concepts students applied most.</p><div class="hmg" id="hmGrid"></div></div></div>
+  <div class="pane" id="tab-religion"><div class="card"><h2>🕌 Religion &amp; Trade Networks</h2><div id="relAnalysis"></div></div></div>
+  <div class="pane" id="tab-discuss"><div class="card"><h2>💬 Discussion Questions</h2><div id="discQs" style="font-size:.87rem;line-height:1.78;color:var(--ink2);"></div></div></div>
+</div>
+
+</div><!-- .main -->
+</div><!-- .app -->
+</div><!-- #appShell -->
+
+<!-- Unlock popup -->
+<div class="uf" id="ufPanel" style="display:none;">
+  <div class="ufi" id="ufIcon">⚗</div>
+  <div class="uft" id="ufTitle">Innovation Unlocked!</div>
+  <div class="ufb" id="ufBody"></div>
+  <button class="btn bg" style="margin-top:.85rem;width:100%;" onclick="document.getElementById('ufPanel').style.display='none'">✦ Claim Innovation</button>
+</div>
+
+<script>
+// ════════════════════════════════════
+// AUTH
+// ════════════════════════════════════
+const CODES={teacher:'3309',student:'07302'};
+let pinBuf='';let selRole=null;let currentRole=null;
+
+function selectRole(r){
+  selRole=r;pinBuf='';updatePinDots();
+  document.getElementById('roleTeacher').classList.toggle('selected',r==='teacher');
+  document.getElementById('roleStudent').classList.toggle('selected',r==='student');
+  document.getElementById('pinLabel').textContent=r==='teacher'?'Enter Teacher Code (4 digits)':'Enter Student Code (5 digits)';
+  document.getElementById('pinError').textContent='';
+  const maxLen=r==='teacher'?4:5;
+  // Update dots count
+  const dd=document.getElementById('pinDots');
+  dd.innerHTML='';for(let i=0;i<maxLen;i++)dd.innerHTML+=`<div class="pin-dot" id="d${i}"></div>`;
+}
+
+function pinKey(k){
+  if(!selRole){notif('Select a role first.');return;}
+  const mx=selRole==='teacher'?4:5;
+  if(pinBuf.length>=mx)return;
+  pinBuf+=k;updatePinDots();
+  document.getElementById('loginSubmitBtn').disabled=pinBuf.length<mx;
+  if(pinBuf.length===mx)document.getElementById('loginSubmitBtn').disabled=false;
+}
+
+function pinClear(){pinBuf='';updatePinDots();document.getElementById('pinError').textContent='';document.getElementById('loginSubmitBtn').disabled=true;}
+
+function updatePinDots(){
+  const mx=selRole==='teacher'?4:selRole==='student'?5:4;
+  for(let i=0;i<mx;i++){const d=document.getElementById('d'+i);if(d)d.classList.toggle('filled',i<pinBuf.length);}
+}
+
+function pinSubmit(){
+  if(!selRole){document.getElementById('pinError').textContent='Please select a role.';return;}
+  const expected=CODES[selRole];
+  if(pinBuf===expected){
+    currentRole=selRole;
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('appShell').style.display='block';
+    document.getElementById('userBadge').textContent=(selRole==='teacher'?'📋 Teacher':'🏛️ Student');
+    if(selRole==='teacher'){
+      document.getElementById('teacherNavSec').style.display='';
+      document.getElementById('teacherRoundSec').style.display='';
+      nav('teacher');
+    } else {
+      document.getElementById('teacherNavSec').style.display='none';
+      document.getElementById('teacherRoundSec').style.display='none';
+      nav('setup');
+    }
+    init();
+  } else {
+    document.getElementById('pinError').textContent='Incorrect code. Try again.';
+    pinBuf='';updatePinDots();
+    document.getElementById('loginSubmitBtn').disabled=true;
+    // shake animation
+    const box=document.querySelector('.login-box');
+    box.style.animation='shake .4s ease';
+    setTimeout(()=>box.style.animation='',500);
+  }
+}
+
+function logout(){
+  selRole=null;pinBuf='';currentRole=null;
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('appShell').style.display='none';
+  document.getElementById('roleTeacher').classList.remove('selected');
+  document.getElementById('roleStudent').classList.remove('selected');
+  document.getElementById('pinLabel').textContent='Select a role above';
+  document.getElementById('pinError').textContent='';
+  document.getElementById('loginSubmitBtn').disabled=true;
+  // reset dots to 4
+  const dd=document.getElementById('pinDots');
+  dd.innerHTML='<div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div><div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div><div class="pin-dot" id="d4"></div>';
+  if(leafMap){leafMap.remove();leafMap=null;mapInitialized=false;}
+}
+
+// Allow Enter key on login
+document.addEventListener('keydown',e=>{
+  if(document.getElementById('loginScreen').style.display!=='none'){
+    if(e.key>='0'&&e.key<='9')pinKey(e.key);
+    if(e.key==='Enter')pinSubmit();
+    if(e.key==='Backspace')pinClear();
+  }
+});
+
+// ════════════════════════════════════
+// DATA
+// ════════════════════════════════════
+const RC={Islam:'#1a6a2a',Christianity:'#7a1040',Buddhism:'#b86000',Hinduism:'#7a2880',Confucianism:'#1a4e7a',Tengrism:'#5a6028'};
+const RB={
+  Islam:'Shared Islamic faith (ummah) created trust networks — qirad partnerships, Arabic contracts, and mosque hospitality enabled Muslim merchants to trade from Timbuktu to Malacca.',
+  Buddhism:'Buddhist monasteries along the Silk Road served as rest-stops, grain stores, and neutral exchange points — shared dharma created trust between distant merchants.',
+  Christianity:'Latin Christian merchants used Church networks and canon law to enforce contracts across the Mediterranean.',
+  Hinduism:'Hindu merchant guilds like the Ayyavole used shared ritual and caste hierarchy to facilitate commerce from South to Southeast Asia.',
+  Confucianism:"China's tributary system extended commercial privileges to partners who acknowledged Confucian court hierarchy.",
+  Tengrism:'Mongol shamanic networks created trust within the empire but did not extend commercial advantages as broadly as universalist religions.'
+};
+
+// Base goods — we clone these so we can mutate per-round quantities
+const BASE_CIVS=[
+  {id:'mongol',e:'🏹',n:'Mongol Empire',r:'Central Asia',sub:'c.1206–1368',rels:['Tengrism','Buddhism'],relP:'Buddhism',lat:47,lng:100,
+   goods:[{i:'🐴',n:'Horses',q:8},{i:'🪶',n:'Furs',q:5},{i:'🗡️',n:'Iron Arms',q:4},{i:'🐄',n:'Livestock',q:6}],
+   routes:['silk-road','steppe-road'],partners:['song','persia','byzantium','delhi'],
+   desc:'Controllers of the Pax Mongolica — tax caravans and connect East to West.',
+   inv:['astrolabe','paper-money','gunpowder-weapons']},
+  {id:'song',e:'🏯',n:'Song/Yuan China',r:'East Asia',sub:'c.960–1368',rels:['Buddhism','Confucianism'],relP:'Confucianism',lat:33,lng:112,
+   goods:[{i:'🧵',n:'Silk',q:10},{i:'🍵',n:'Tea',q:8},{i:'🏺',n:'Porcelain',q:7},{i:'🧨',n:'Gunpowder',q:4}],
+   routes:['silk-road','sea-of-china'],partners:['mongol','malacca','delhi','swahili'],
+   desc:'The workshop of the world — silk, porcelain, and paper money flow outward.',
+   inv:['compass','printing-press','canal-lock']},
+  {id:'mali',e:'☀️',n:'Mali Empire',r:'West Africa',sub:'c.1235–1600',rels:['Islam'],relP:'Islam',lat:13,lng:-8,
+   goods:[{i:'🥇',n:'Gold',q:10},{i:'🧂',n:'Salt',q:8},{i:'📚',n:'Manuscripts',q:3},{i:'🌰',n:'Kola Nuts',q:5}],
+   routes:['trans-saharan','coastal-africa'],partners:['morocco','swahili','persia','byzantium'],
+   desc:"Mansa Musa's realm — controls trans-Saharan routes between gold and salt.",
+   inv:['camel-saddle','astronomical-tables','madrasas']},
+  {id:'swahili',e:'⛵',n:'Swahili City-States',r:'East Africa',sub:'c.900–1500',rels:['Islam'],relP:'Islam',lat:-4,lng:40,
+   goods:[{i:'🐘',n:'Ivory',q:7},{i:'🥇',n:'Gold',q:5},{i:'🐚',n:'Cowrie Shells',q:6},{i:'🌴',n:'Timber',q:4}],
+   routes:['indian-ocean','coastal-africa'],partners:['delhi','malacca','song','persia'],
+   desc:'Port cities of Kilwa and Mombasa — nodes of the Indian Ocean network.',
+   inv:['lateen-sail','stellar-navigation','dhow-design']},
+  {id:'delhi',e:'🕌',n:'Delhi Sultanate',r:'South Asia',sub:'c.1206–1526',rels:['Islam','Hinduism'],relP:'Islam',lat:24,lng:78,
+   goods:[{i:'💎',n:'Gemstones',q:6},{i:'🌶️',n:'Spices',q:8},{i:'🧶',n:'Cotton Cloth',q:9},{i:'⚔️',n:'Steel Blades',q:4}],
+   routes:['indian-ocean','silk-road'],partners:['swahili','malacca','persia','mongol'],
+   desc:'India at the center of Indian Ocean trade — spices, cotton, and gems flow through your ports.',
+   inv:['astrolabe','cotton-tools','persian-wheel']},
+  {id:'malacca',e:'🌊',n:'Sultanate of Malacca',r:'Southeast Asia',sub:'c.1400–1511',rels:['Islam','Buddhism'],relP:'Islam',lat:3,lng:102,
+   goods:[{i:'🌺',n:'Cloves',q:10},{i:'🌴',n:'Nutmeg',q:7},{i:'🐢',n:'Tortoiseshell',q:4},{i:'💛',n:'Beeswax',q:3}],
+   routes:['indian-ocean','sea-of-china'],partners:['song','delhi','swahili','persia'],
+   desc:'Controls the Strait of Malacca — chokepoint between the Indian Ocean and South China Sea.',
+   inv:['junk-rigging','tidal-charts','spice-preservation']},
+  {id:'persia',e:'🌹',n:'Ilkhanate Persia',r:'Middle East',sub:'c.1256–1335',rels:['Islam'],relP:'Islam',lat:33,lng:52,
+   goods:[{i:'🥤',n:'Glass',q:6},{i:'🌸',n:'Carpets',q:7},{i:'📖',n:'Manuscripts',q:5},{i:'🫙',n:'Ceramics',q:6}],
+   routes:['silk-road','indian-ocean'],partners:['mongol','song','mali','byzantium'],
+   desc:'Persian scholars and merchants connect Mongol China with the Mediterranean world.',
+   inv:['astrolabe','algebra-texts','windmill']},
+  {id:'morocco',e:'🏔️',n:'Marinid Morocco',r:'North Africa',sub:'c.1244–1465',rels:['Islam'],relP:'Islam',lat:32,lng:-6,
+   goods:[{i:'🥈',n:'Silver',q:5},{i:'🏺',n:'Pottery',q:6},{i:'🐪',n:'Camels',q:7},{i:'⛏️',n:'Copper',q:5}],
+   routes:['trans-saharan','mediterranean'],partners:['mali','byzantium','persia','delhi'],
+   desc:'Morocco bridges sub-Saharan Africa and Mediterranean Europe.',
+   inv:['camel-saddle','madrasas','astronomical-tables']},
+  {id:'byzantium',e:'⚜️',n:'Byzantine Empire',r:'Europe/Anatolia',sub:'c.330–1453',rels:['Christianity'],relP:'Christianity',lat:41,lng:29,
+   goods:[{i:'🪙',n:'Gold Coin',q:6},{i:'🧣',n:'Luxury Cloth',q:7},{i:'🫒',n:'Olive Oil',q:5},{i:'🍷',n:'Wine',q:5}],
+   routes:['silk-road','mediterranean'],partners:['persia','mongol','morocco','mali'],
+   desc:'Constantinople controls trade between the Black Sea and Mediterranean.',
+   inv:['greek-fire','aqueducts','dome-arch']}
+];
+
+// Deep clone goods so mutations don't affect originals
+let CIVS=BASE_CIVS.map(c=>({...c,goods:c.goods.map(g=>({...g}))}));
+
+const ROUTES={
+  'silk-road':{l:'Silk Road',t:'land',d:'Overland network from China through Central Asia to the Middle East and Europe. Safest during the Pax Mongolica.',tags:['Pax Mongolica','Luxury goods','Cultural diffusion'],rel:[{r:'Islam',c:'#1a6a2a'},{r:'Buddhism',c:'#b86000'}]},
+  'indian-ocean':{l:'Indian Ocean Network',t:'sea',d:"Monsoon-powered sea lanes connecting East Africa, Arabia, India, SE Asia, and China — the world's largest pre-modern trade zone.",tags:['Monsoon winds','Dhow technology','Port cities'],rel:[{r:'Islam',c:'#1a6a2a'},{r:'Hinduism',c:'#7a2880'}]},
+  'trans-saharan':{l:'Trans-Saharan Route',t:'land',d:'Camel caravans cross the Sahara linking West African gold with North African and Mediterranean markets.',tags:['Camel pastoralism','Gold-salt exchange','Saharan oases'],rel:[{r:'Islam',c:'#1a6a2a'}]},
+  'mediterranean':{l:'Mediterranean Sea',t:'sea',d:'Ancient sea lanes connecting Southern Europe, North Africa, and the Middle East. Italian city-states increasingly dominate.',tags:['Maritime trade','Italian merchants','Crusade commerce'],rel:[{r:'Christianity',c:'#7a1040'},{r:'Islam',c:'#1a6a2a'}]},
+  'steppe-road':{l:'Eurasian Steppe Road',t:'land',d:'Nomadic pastoral routes across the grasslands — faster for horses, messengers, and armies.',tags:['Pastoral nomads','Yam postal system','Horse relay'],rel:[{r:'Buddhism',c:'#b86000'}]},
+  'sea-of-china':{l:'South China Sea',t:'sea',d:"Connects China, Vietnam, Philippines, and Malacca. Chinese junks dominate.",tags:['Chinese junks','Zheng He voyages','Tributary system'],rel:[{r:'Buddhism',c:'#b86000'},{r:'Confucianism',c:'#1a4e7a'}]},
+  'coastal-africa':{l:'East African Coast',t:'sea',d:'Swahili dhows connect coastal city-states from Somalia to Mozambique.',tags:['Swahili culture','Gold from Zimbabwe','Dhow navigation'],rel:[{r:'Islam',c:'#1a6a2a'}]}
+};
+
+const INV={
+  'astrolabe':{i:'🔭',n:'Astrolabe',b:'+2 sea route accuracy',d:'Measures star altitude for latitude. Developed in the Islamic world — enables open-ocean navigation.',rp:['persia','mali','delhi','morocco'],rc:2},
+  'paper-money':{i:'💴',n:'Paper Money',b:'+3 wealth/round',d:'Chinese jiaochao eliminates heavy coin transport — revolutionizes long-distance commerce.',rp:['song','malacca'],rc:1},
+  'gunpowder-weapons':{i:'💣',n:'Gunpowder Weapons',b:'+2 military protection',d:'Firearms spreading from China via the Mongol Empire — the military revolution of the 1300s.',rp:['song','mongol'],rc:1},
+  'compass':{i:'🧭',n:'Magnetic Compass',b:'+3 all sea routes',d:'Chinese invention allowing accurate all-weather navigation. Spreads via Indian Ocean trade.',rp:['malacca','swahili','delhi'],rc:2},
+  'printing-press':{i:'📰',n:'Woodblock Printing',b:'+2 cultural diffusion',d:'Mass-produces Buddhist sutras, Confucian classics, and technical manuals.',rp:['mongol','persia','byzantium'],rc:2},
+  'canal-lock':{i:'🚢',n:'Canal Lock',b:'+2 inland trade',d:'Chinese hydraulic engineering links the Grand Canal, reducing transport costs.',rp:['song','mongol'],rc:1},
+  'camel-saddle':{i:'🐪',n:'Improved Camel Saddle',b:'+3 Saharan routes',d:'North African innovations increase camel load capacity, making trans-Saharan routes more profitable.',rp:['mali','persia'],rc:1},
+  'astronomical-tables':{i:'⭐',n:'Astronomical Tables',b:'+2 all routes',d:'Precise star charts from Baghdad and Timbuktu allow night navigation and seasonal wind prediction.',rp:['persia','mali','swahili'],rc:2},
+  'madrasas':{i:'📚',n:'Madrasa Network',b:'+2 Islamic route trust',d:'Schools from Timbuktu to Samarkand create shared scholarly and legal culture for merchants.',rp:['persia','mali','delhi','morocco'],rc:2},
+  'lateen-sail':{i:'⛵',n:'Lateen Sail',b:'+3 sailing against wind',d:'Triangular sail for sailing into the wind — critical for Indian Ocean navigation.',rp:['delhi','malacca','morocco'],rc:2},
+  'stellar-navigation':{i:'🌟',n:'Stellar Navigation',b:'+2 deep-sea routes',d:'Arab and Swahili sailors use star patterns for deep-ocean navigation.',rp:['persia','malacca','delhi'],rc:2},
+  'dhow-design':{i:'🛥️',n:'Advanced Dhow',b:'+3 Indian Ocean capacity',d:'Sewn-plank dhow construction allows larger ships for monsoon seas.',rp:['delhi','persia','malacca'],rc:2},
+  'junk-rigging':{i:'⛩️',n:'Chinese Junk Rigging',b:'+3 South China Sea',d:"Battened lug sails allow precise wind control. Chinese junks were the world's largest ships.",rp:['song','swahili'],rc:1},
+  'tidal-charts':{i:'🌊',n:'Tidal Charts',b:'+2 port efficiency',d:'Precise tidal charts for the Malaccan Strait allow captains to time arrivals.',rp:['delhi','swahili'],rc:1},
+  'spice-preservation':{i:'🫙',n:'Spice Preservation',b:'+4 spice goods value',d:'Drying and storage transform spices into stable long-voyage trade goods.',rp:['delhi','song'],rc:1},
+  'cotton-tools':{i:'🌿',n:'Cotton Processing Tools',b:'+3 textile goods',d:'Indian churka and draw-loom designs make Indian cotton the top-selling textile.',rp:['swahili','malacca'],rc:1},
+  'persian-wheel':{i:'💧',n:'Persian Wheel',b:'+2 agricultural output',d:'Water-lifting device spreading across South Asia and Middle East.',rp:['persia','morocco'],rc:1},
+  'greek-fire':{i:'🔥',n:'Greek Fire',b:'+3 naval protection',d:"Byzantine incendiary weapon — its formula was a state secret for centuries.",rp:['byzantium','persia'],rc:1},
+  'aqueducts':{i:'🏛️',n:'Aqueduct Engineering',b:'+2 city infrastructure',d:"Byzantine water engineering sustains Constantinople as the world's greatest trading city.",rp:['byzantium','mali'],rc:1},
+  'dome-arch':{i:'🕌',n:'Dome Architecture',b:'+2 cultural prestige',d:'Byzantine and Islamic architects perfected the pendentive dome — mosques and churches drew merchants worldwide.',rp:['byzantium','persia','mali'],rc:2},
+  'windmill':{i:'⚙️',n:'Windmill Technology',b:'+2 grain processing',d:'Horizontal-axis windmills from Persia spreading west and east via trade contacts.',rp:['mongol','song','byzantium'],rc:2},
+  'algebra-texts':{i:'📐',n:'Algebra Texts',b:'+3 navigation accuracy',d:"Al-Khwarizmi's works enable precise astronomical calculations for navigation.",rp:['mali','byzantium','delhi'],rc:2}
+};
+
+const CONCEPTS=['Pax Mongolica','Monsoon winds','Comparative advantage','Silk Road','Indian Ocean network','Trans-Saharan trade','Cultural diffusion','Disease transmission','Luxury goods demand','Diasporic merchants','State-sponsored trade','Religious networks','Zheng He voyages','Chokepoint control','Tribute system','Gold-salt exchange','Technology exchange','Pastoral nomadism'];
+
+const EVENTS=[
+  {id:'plague',unit:'Unit 2',i:'🦠',t:'The Black Death (1347)',d:'Plague travels along Silk Road trade routes, devastating Eurasian populations.',e:'Land routes +risk. Sea routes favored. The "dark side" of interconnection.'},
+  {id:'mansa',unit:'Unit 2',i:'👑',t:"Mansa Musa's Hajj (1324)",d:"The Mali emperor's pilgrimage floods Mediterranean markets with gold, triggering inflation.",e:"Gold devalued in Mediterranean. Islamic scholars follow Musa to Timbuktu — classic cultural diffusion."},
+  {id:'conquest',unit:'Unit 3',i:'⚔️',t:'Mongol Conquest of Persia (1258)',d:'The Mongols sack Baghdad, then the Pax Mongolica reorganizes Silk Road trade.',e:'Persian routes disrupted then stabilized. Silk Road safer under Mongol yam system.'},
+  {id:'zhenghe',unit:'Unit 4',i:'⛵',t:"Zheng He's Treasure Voyages (1405)",d:"Ming China's massive fleet establishes tributary relationships from SE Asia to East Africa.",e:'Indian Ocean routes more active. Malacca benefits enormously.'},
+  {id:'ottoman',unit:'Unit 3',i:'🏰',t:'Ottoman Expansion (1300s)',d:'Ottomans consolidate Anatolia, threatening Byzantine control of trade routes.',e:'Mediterranean routes shift. Byzantine traders lose ground.'},
+  {id:'pax',unit:'Unit 2',i:'🕊️',t:'Pax Mongolica at its Peak (1280)',d:"Relative peace across Eurasia. Marco Polo's journey becomes possible.",e:'Silk Road trade peaks. Cultural exchange and luxury goods trade surge.'}
+];
+
+const DISCUSS=[
+  '1. How did the Mongol Empire simultaneously destroy societies and facilitate greater trade connections?',
+  '2. What role did geography play in which routes your civilization used? How did monsoons or the Sahara shape choices?',
+  '3. Compare Silk Road vs. Indian Ocean network: which was more significant for cultural diffusion? Why?',
+  '4. How did shared Islamic identity function as a "trade network"? Which civilizations benefited most?',
+  '5. What made Malacca, Persia, and the Swahili coast "middlemen"? Advantages and vulnerabilities?',
+  '6. How did disease travel along trade routes? What does the Black Death tell us about interconnection?',
+  '7. Ibn Battuta traveled 75,000 miles using Islamic networks for food, lodging, and protection. How does your simulation reflect this?',
+  '8. The innovations you unlocked spread through trade, not conquest. What does this tell us about technology diffusion?'
+];
+
+// ════════════════════════════════════
+// STATE
+// ════════════════════════════════════
+let G={v:'teacher',civ:null,ev:null,round:1,maxR:3,selEv:null,trades:[],unlocked:{},goodsState:{}};
+CIVS.forEach(c=>{G.unlocked[c.id]=[];G.goodsState[c.id]=c.goods.map(g=>({...g}));});
+let sel={route:null,goods:[],partner:null,concepts:[]};
+let lyr={trade:true,rel:true,isl:false,bud:false,stu:false};
+
+// Leaflet map state
+let leafMap=null;let mapInitialized=false;
+let tradeLines={};let relCircles=[];let studentLines={};let civMarkers={};
+
+function init(){
+  rSidebar();
+  if(currentRole==='teacher'){rRoster();rStats();rEvGrid();rTradeSumm();}
+  if(currentRole==='student'){rSetupGrid();}
+  rDbCards();rScoring();rHeatmap();rDisc();rRelAnalysis();
+}
+
+// ════════════════════════════════════
+// NAV
+// ════════════════════════════════════
+function nav(v){
+  G.v=v;
+  document.querySelectorAll('.view').forEach(e=>e.classList.remove('act'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('act'));
+  if(v==='student'){document.getElementById('vstudent').classList.add('act');}
+  else if(v==='setup'){document.getElementById('vsetup').classList.add('act');}
+  else{
+    const el=document.getElementById('v'+v);if(el)el.classList.add('act');
+    const b=document.getElementById('nb'+v[0].toUpperCase()+v.slice(1));if(b)b.classList.add('act');
+  }
+  if(v==='network'){
+    document.getElementById('vnetwork').classList.add('act');
+    setTimeout(initMap,200);
+  }
+  if(v==='debrief'){rDbCards();rScoring();rHeatmap();rDbInv();rRelAnalysis();}
+}
+
+// ════════════════════════════════════
+// MAP (LEAFLET)
+// ════════════════════════════════════
+function initMap(){
+  if(mapInitialized)return;
+  const el=document.getElementById('mapDiv');
+  if(!el)return;
+  // If the div has no height yet, retry after a short delay
+  if(el.offsetHeight<10){setTimeout(initMap,150);return;}
+  mapInitialized=true;
+
+  leafMap=L.map('mapDiv',{
+    center:[25,60],zoom:3,minZoom:2,maxZoom:6,
+    zoomControl:true,attributionControl:true
+  });
+
+  // Real map tiles — Natural Earth style via CARTO (historical-looking warm tones)
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
+    attribution:'© OpenStreetMap contributors © CARTO',
+    subdomains:'abcd',maxZoom:6
+  }).addTo(leafMap);
+
+  // Add a sepia/parchment overlay for the historical feel
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:absolute;inset:0;background:rgba(200,160,80,.08);pointer-events:none;z-index:400;mix-blend-mode:multiply;';
+  el.appendChild(overlay);
+
+  drawTradeRoutes();
+  drawRelPolygons();
+  addCivMarkers();
+  // Force Leaflet to recalculate container size after DOM settles
+  setTimeout(()=>{ if(leafMap)leafMap.invalidateSize(); }, 300);
+}
+
+// ── TRADE ROUTE PATHS (more historically accurate multi-segment paths) ──
+const ROUTE_PATHS={
+  // Silk Road: Constantinople → Antioch → Baghdad → Tabriz → Samarkand → Kashgar → Dunhuang → Chang'an
+  'silk-road':[[41,29],[37,36],[33,44],[33,52],[38,58],[40,65],[41,72],[39,76],[38,82],[40,92],[39,98],[40,106],[34,109],[34,112]],
+  // Indian Ocean: Red Sea → Arabia → India → Bay of Bengal → SE Asia → China coast
+  'indian-ocean':[[30,33],[24,38],[12,44],[22,60],[18,73],[8,77],[6,80],[3,80],[1,104],[6,110],[14,108],[22,114],[29,122]],
+  // East African branch of Indian Ocean
+  'indian-ocean-ea':[[-9,37],[-4,40],[0,42],[8,50],[12,44]],
+  // Trans-Saharan: Timbuktu → Taghaza → Fez → Tunis → Cairo
+  'trans-saharan':[[13,-8],[19,-1],[22,4],[28,10],[32,0],[34,9],[37,10],[30,32]],
+  // Trans-Saharan western branch: Kumbi Saleh → Ghana → Niger bend
+  'trans-saharan-w':[[15,-15],[13,-8],[16,-3],[13,2]],
+  // Mediterranean: Gibraltar → Carthage → Alexandria → Levant
+  'mediterranean':[[36,-6],[37,10],[37,15],[37,22],[33,25],[32,35],[35,37],[36,36]],
+  // Mediterranean northern: Venice → Constantinople
+  'mediterranean-n':[[45,12],[41,20],[41,29]],
+  // Steppe Road: Kiev → Sarai → Urgench → Otrar → Karakorum
+  'steppe-road':[[50,30],[48,44],[42,60],[42,62],[44,70],[47,100],[48,106]],
+  // South China Sea: Guangzhou → Vietnam → Malacca Strait → Java Sea
+  'sea-of-china':[[23,113],[16,108],[10,107],[5,103],[3,102],[1,104],[-7,107],[-8,115]],
+  // East African Coast: Mogadishu → Mombasa → Kilwa → Sofala
+  'coastal-africa':[[2,45],[-4,40],[-10,40],[-20,35],[-20,35]]
+};
+
+const ROUTE_COLORS={
+  'silk-road':'#c8902a',
+  'indian-ocean':'#2a6aaa',
+  'indian-ocean-ea':'#2a6aaa',
+  'trans-saharan':'#b06818',
+  'trans-saharan-w':'#b06818',
+  'mediterranean':'#7050a0',
+  'mediterranean-n':'#7050a0',
+  'steppe-road':'#806028',
+  'sea-of-china':'#1a5890',
+  'coastal-africa':'#2a6aaa'
+};
+
+// Which named route IDs (from ROUTES object) each path segment belongs to
+const PATH_TO_ROUTE={
+  'silk-road':'silk-road',
+  'indian-ocean':'indian-ocean','indian-ocean-ea':'indian-ocean',
+  'trans-saharan':'trans-saharan','trans-saharan-w':'trans-saharan',
+  'mediterranean':'mediterranean','mediterranean-n':'mediterranean',
+  'steppe-road':'steppe-road',
+  'sea-of-china':'sea-of-china',
+  'coastal-africa':'coastal-africa'
+};
+
+const ROUTE_DASH={
+  'silk-road':'8,5','indian-ocean':null,'indian-ocean-ea':null,
+  'trans-saharan':'8,5','trans-saharan-w':'8,5',
+  'mediterranean':null,'mediterranean-n':null,
+  'steppe-road':'5,4',
+  'sea-of-china':null,'coastal-africa':null
+};
+
+// Route labels positioned at midpoint of primary segment
+const ROUTE_LABEL_PT={
+  'silk-road':[39,76],'indian-ocean':[8,77],
+  'trans-saharan':[25,6],'mediterranean':[36,18],
+  'steppe-road':[46,62],'sea-of-china':[8,107],'coastal-africa':[-12,38]
+};
+
+// Track which route IDs have been activated by student trades
+const activatedRoutes=new Set();
+// Store both ghost (dim) and active (bold) layers
+const routeGhostLines={};  // faint always-visible
+const routeActiveLayers={}; // bold, shown when activated
+
+function drawTradeRoutes(){
+  Object.entries(ROUTE_PATHS).forEach(([segId,coords])=>{
+    const routeId=PATH_TO_ROUTE[segId];
+    const color=ROUTE_COLORS[segId];
+    const dash=ROUTE_DASH[segId];
+
+    // GHOST layer — always visible but very faint, thin, dashed
+    const ghost=L.polyline(coords,{
+      color,weight:1.5,opacity:.3,
+      dashArray:dash||(routeId==='silk-road'||routeId==='steppe-road'||routeId==='trans-saharan'?'6,5':'4,4'),
+      interactive:false
+    }).addTo(leafMap);
+    if(!routeGhostLines[routeId])routeGhostLines[routeId]=[];
+    routeGhostLines[routeId].push(ghost);
+
+    // ACTIVE layer — bold, animated, shown only when route is activated
+    const active=L.polyline(coords,{
+      color,weight:segId==='silk-road'||segId==='indian-ocean'||segId==='sea-of-china'?4.5:3.5,
+      opacity:.95,dashArray:dash||null
+    });// NOT added to map yet
+    if(!routeActiveLayers[routeId])routeActiveLayers[routeId]=[];
+    routeActiveLayers[routeId].push(active);
+  });
+
+  // Add route name labels (always visible, faint until activated)
+  Object.entries(ROUTE_LABEL_PT).forEach(([routeId,pt])=>{
+    const ro=ROUTES[routeId];const color=ROUTE_COLORS[routeId];if(!ro)return;
+    const icon=L.divIcon({
+      className:'',
+      html:`<div id="rlabel-${routeId}" style="font-family:'JetBrains Mono',monospace;font-size:9px;color:${color};opacity:.4;font-weight:500;white-space:nowrap;text-shadow:0 0 3px rgba(0,0,0,.7);pointer-events:none;transition:all .4s;">${ro.l}</div>`,
+      iconAnchor:[0,0]
+    });
+    const lm=L.marker(pt,{icon,interactive:false}).addTo(leafMap);
+    // store for later brightening
+    if(!routeGhostLines[routeId])routeGhostLines[routeId]=[];
+    routeGhostLines[routeId].push(lm);
+  });
+}
+
+function activateRouteOnMap(routeId){
+  if(activatedRoutes.has(routeId)||!leafMap)return;
+  activatedRoutes.add(routeId);
+
+  // Fade ghost down a bit more (it remains as background)
+  if(routeGhostLines[routeId]){
+    routeGhostLines[routeId].forEach(l=>{
+      if(l.setStyle)l.setStyle({opacity:.18,weight:1});
+    });
+  }
+
+  // Bring active bold layer onto the map
+  if(routeActiveLayers[routeId]){
+    routeActiveLayers[routeId].forEach(l=>l.addTo(leafMap));
+  }
+
+  // Brighten the label
+  const lbl=document.getElementById('rlabel-'+routeId);
+  if(lbl)lbl.style.cssText=lbl.style.cssText.replace('opacity:.4','opacity:1')+';font-weight:700;font-size:10px;';
+}
+
+// ── RELIGION INFLUENCE POLYGONS (historically accurate shapes) ──
+// These approximate the actual spread of each religion c.1200-1450
+
+const REL_POLYGONS={
+  // Islam: Maghreb, Egypt, Arabia, Persia, Central Asia, N India, W Africa, SE Asia coasts
+  Islam:{
+    color:'#1a6a2a',
+    label:'☪ ISLAM',
+    labelPt:[32,45],
+    polys:[
+      // Core Middle East + N Africa belt
+      [[37,-6],[36,0],[32,2],[28,15],[22,30],[20,37],[12,44],[22,58],[32,48],[40,52],[44,58],[42,65],[40,72],[36,65],[33,52],[37,36],[40,30],[36,22],[33,15],[36,9],[36,0],[37,-6]],
+      // West Africa (Mali/Songhai corridor)
+      [[16,-18],[22,-16],[20,-5],[15,0],[13,8],[10,2],[8,-5],[12,-15],[16,-18]],
+      // Central Asian steppe
+      [[44,55],[48,62],[50,72],[45,78],[42,70],[40,65],[44,58]],
+      // SE Asia (Malacca, coastal)
+      [[6,99],[3,102],[1,104],[5,110],[10,107],[12,101],[8,98],[6,99]]
+    ]
+  },
+  // Christianity: Western Europe, Byzantium/Anatolia, Crusader states
+  Christianity:{
+    color:'#7a1040',
+    label:'✝ CHRISTIANITY',
+    labelPt:[48,12],
+    polys:[
+      // Western & Central Europe
+      [[58,5],[55,20],[52,24],[48,22],[46,15],[44,12],[44,0],[40,-8],[38,-8],[36,-6],[36,0],[40,10],[44,12],[46,16],[52,22],[55,24],[58,18],[58,5]],
+      // Balkans + Byzantine core
+      [[48,22],[44,26],[42,28],[40,28],[36,30],[36,36],[38,40],[42,38],[44,32],[48,28],[48,22]]
+    ]
+  },
+  // Buddhism: East Asia, SE Asia, Sri Lanka, parts of Central Asia
+  Buddhism:{
+    color:'#b86000',
+    label:'☸ BUDDHISM',
+    labelPt:[35,105],
+    polys:[
+      // China, Korea, Japan corridor
+      [[40,72],[42,82],[38,88],[36,100],[28,106],[22,114],[28,120],[34,118],[38,118],[42,130],[45,132],[42,128],[38,122],[34,112],[36,105],[40,100],[44,90],[46,82],[44,72],[40,72]],
+      // SE Asia mainland
+      [[22,98],[18,102],[14,100],[10,100],[6,100],[6,104],[10,105],[14,108],[20,106],[22,104],[22,98]],
+      // Central Asian corridor (older influence)
+      [[40,65],[42,72],[40,80],[36,80],[36,72],[38,65],[40,65]]
+    ]
+  },
+  // Hinduism: Indian subcontinent, Bali/Java
+  Hinduism:{
+    color:'#7a2880',
+    label:'ॐ HINDUISM',
+    labelPt:[20,80],
+    polys:[
+      // Indian subcontinent
+      [[28,64],[32,70],[28,76],[22,88],[8,78],[8,68],[14,72],[18,72],[20,68],[22,72],[26,68],[28,64]],
+      // Bali/Java small pocket
+      [[-8,114],[-8,118],[-6,120],[-6,116],[-8,114]]
+    ]
+  }
+};
+
+function drawRelPolygons(){
+  Object.entries(REL_POLYGONS).forEach(([rel,data])=>{
+    data.polys.forEach(pts=>{
+      const poly=L.polygon(pts,{
+        color:data.color,fillColor:data.color,
+        fillOpacity:.1,weight:1.8,
+        dashArray:'6 4',opacity:.7
+      }).addTo(leafMap);
+      relCircles.push(poly);
+    });
+    // Label
+    const icon=L.divIcon({
+      className:'',
+      html:`<div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:${data.color};text-shadow:0 0 6px rgba(0,0,0,.9),0 0 12px rgba(0,0,0,.6);pointer-events:none;white-space:nowrap;">${data.label}</div>`,
+      iconAnchor:[-5,0]
+    });
+    const lm=L.marker(data.labelPt,{icon,interactive:false}).addTo(leafMap);
+    relCircles.push(lm);
+  });
+}
+
+function addCivMarkers(){
+  CIVS.forEach(c=>{
+    const traded=G.trades.find(t=>t.cid===c.id&&t.r===G.round&&t.sub);
+    const isActive=G.civ&&G.civ.id===c.id;
+    const cls='civ-marker'+(isActive?' active':traded?' traded':'');
+    const icon=L.divIcon({className:'',html:`<div class="${cls}" id="cmark-${c.id}">${c.e}</div>`,iconSize:[36,36],iconAnchor:[18,18]});
+    const marker=L.marker([c.lat,c.lng],{icon}).addTo(leafMap);
+    marker.on('click',()=>{
+      if(currentRole==='student'){pickCiv(c.id);}
+      else{
+        L.popup().setLatLng([c.lat,c.lng]).setContent(`
+          <div style="font-family:'Cinzel',serif;font-size:.85rem;color:var(--goldl);font-weight:700;margin-bottom:.3rem;">${c.e} ${c.n}</div>
+          <div style="font-size:.75rem;color:#c0a060;margin-bottom:.4rem;">${c.r} · ${c.sub}</div>
+          <div style="font-size:.72rem;color:#a09060;">${c.desc}</div>
+          <div style="margin-top:.4rem;font-size:.68rem;color:#8a7040;">Goods: ${getGoods(c.id).map(g=>g.i+' '+g.n+' ('+g.q+')').join(', ')}</div>
+        `).openOn(leafMap);
+      }
+    });
+    civMarkers[c.id]=marker;
+  });
+}
+
+function refreshCivMarkers(){
+  // Update marker classes based on trade status
+  CIVS.forEach(c=>{
+    const el=document.getElementById('cmark-'+c.id);if(!el)return;
+    const traded=G.trades.find(t=>t.cid===c.id&&t.r===G.round&&t.sub);
+    const isActive=G.civ&&G.civ.id===c.id;
+    el.className='civ-marker'+(isActive?' active':traded?' traded':'');
+  });
+}
+
+function drawStudentLine(trade){
+  const from=CIVS.find(c=>c.id===trade.cid);
+  const to=CIVS.find(c=>c.id===trade.partner);
+  if(!from||!to||!leafMap)return;
+  const ro=ROUTES[trade.route];
+  const col=ro.t==='land'?'#d4961e':'#4488cc';
+  if(studentLines[trade.cid+trade.r])studentLines[trade.cid+trade.r].remove();
+  const line=L.polyline([[from.lat,from.lng],[to.lat,to.lng]],{color:col,weight:4,opacity:.9,dashArray:'10 4'}).addTo(leafMap);
+  studentLines[trade.cid+trade.r]=line;
+}
+
+function togL(k){
+  lyr[k]=!lyr[k];
+  const b=document.getElementById('lb'+k[0].toUpperCase()+k.slice(1));if(b)b.classList.toggle('on',lyr[k]);
+  if(!leafMap)return;
+
+  if(k==='trade'){
+    // Toggle ghost layers
+    Object.values(routeGhostLines).forEach(arr=>arr.forEach(l=>{
+      if(lyr.trade){if(!leafMap.hasLayer(l))l.addTo(leafMap);}
+      else{if(leafMap.hasLayer(l))leafMap.removeLayer(l);}
+    }));
+    // Toggle active (bold) layers — only the activated ones
+    activatedRoutes.forEach(rid=>{
+      if(routeActiveLayers[rid])routeActiveLayers[rid].forEach(l=>{
+        if(lyr.trade){if(!leafMap.hasLayer(l))l.addTo(leafMap);}
+        else{if(leafMap.hasLayer(l))leafMap.removeLayer(l);}
+      });
+    });
+  }
+
+  if(k==='rel'){
+    relCircles.forEach(l=>{
+      if(lyr.rel){if(!leafMap.hasLayer(l))l.addTo(leafMap);}
+      else{if(leafMap.hasLayer(l))leafMap.removeLayer(l);}
+    });
+  }
+
+  // Islamic route overlay
+  if(k==='isl'){
+    if(lyr.isl){
+      if(!leafMap._islLayer){
+        const islPaths=[[13,-8],[16,-3],[22,4],[28,10],[30,32],[33,36],[33,44],[33,52],[24,68],[8,77],[3,80],[3,102]];
+        leafMap._islLayer=L.polyline(islPaths,{color:'#1a6a2a',weight:4.5,opacity:.92,dashArray:'9 4'}).addTo(leafMap);
+        const ic=L.divIcon({className:'',html:`<div style="font-family:'Cinzel',serif;font-size:10px;font-weight:700;color:#1a6a2a;text-shadow:0 0 6px rgba(0,0,0,.9);white-space:nowrap;padding:2px 5px;background:rgba(0,0,0,.45);border-radius:2px;">☪ Islamic Trade Corridor</div>`,iconAnchor:[0,0]});
+        leafMap._islLabel=L.marker([22,40],{icon:ic,interactive:false}).addTo(leafMap);
+      }
+    }else{
+      if(leafMap._islLayer){leafMap.removeLayer(leafMap._islLayer);leafMap._islLayer=null;}
+      if(leafMap._islLabel){leafMap.removeLayer(leafMap._islLabel);leafMap._islLabel=null;}
+    }
+  }
+
+  // Buddhist route overlay
+  if(k==='bud'){
+    if(lyr.bud){
+      if(!leafMap._budLayer){
+        const budPaths=[[40,72],[42,82],[38,88],[40,100],[36,105],[34,112],[29,122],[22,114]];
+        leafMap._budLayer=L.polyline(budPaths,{color:'#b86000',weight:4.5,opacity:.92,dashArray:'9 4'}).addTo(leafMap);
+        const ic=L.divIcon({className:'',html:`<div style="font-family:'Cinzel',serif;font-size:10px;font-weight:700;color:#b86000;text-shadow:0 0 6px rgba(0,0,0,.9);white-space:nowrap;padding:2px 5px;background:rgba(0,0,0,.45);border-radius:2px;">☸ Buddhist Trade Network</div>`,iconAnchor:[0,0]});
+        leafMap._budLabel=L.marker([40,96],{icon:ic,interactive:false}).addTo(leafMap);
+      }
+    }else{
+      if(leafMap._budLayer){leafMap.removeLayer(leafMap._budLayer);leafMap._budLayer=null;}
+      if(leafMap._budLabel){leafMap.removeLayer(leafMap._budLabel);leafMap._budLabel=null;}
+    }
+  }
+
+  if(k==='stu'){
+    const all=G.trades.filter(t=>t.r===G.round&&t.sub);
+    all.forEach(t=>drawStudentLine(t));
+    Object.values(studentLines).forEach(l=>{
+      if(lyr.stu){if(!leafMap.hasLayer(l))l.addTo(leafMap);}
+      else{if(leafMap.hasLayer(l))leafMap.removeLayer(l);}
+    });
+  }
+}
+
+// Update trade log on map view
+function rTradeLog(){
+  const all=G.trades.filter(t=>t.r===G.round&&t.sub);
+  const el=document.getElementById('tlogEntries');if(!el)return;
+  if(!all.length){el.innerHTML='<div style="color:#7a6030;font-size:.8rem;font-style:italic;">No trades yet.</div>';return;}
+  el.innerHTML=all.map(t=>{
+    const cv=CIVS.find(c=>c.id===t.cid);const ro=ROUTES[t.route];const p=CIVS.find(c=>c.id===t.partner);
+    return`<div class="te"><span style="font-size:1rem;">${cv.e}</span><div><div>${cv.n} → <strong>${p?p.n:'—'}</strong></div><div class="ter">${ro.l} · ${t.goods.join(', ')}</div></div></div>`;
+  }).join('');
+}
+
+// ════════════════════════════════════
+// GOODS SYSTEM — inventory grows after trade
+// ════════════════════════════════════
+function getGoods(civId){return G.goodsState[civId]||CIVS.find(c=>c.id===civId)?.goods||[];}
+
+function growGoods(civId,tradedGoods,sharedRel){
+  // After a successful trade: traded goods increase by 2, other goods by 1
+  // If shared religion bonus: +1 extra on all
+  const bonus=sharedRel?1:0;
+  const gs=G.goodsState[civId];
+  if(!gs)return;
+  gs.forEach(g=>{
+    if(tradedGoods.includes(g.n))g.q+=2+bonus;
+    else g.q+=1;
+  });
+}
+
+function buildGrowthBanner(civId,tradedGoods,sharedRel){
+  const gs=G.goodsState[civId];if(!gs)return'';
+  const bonus=sharedRel?1:0;
+  const lines=gs.map(g=>{
+    const gain=tradedGoods.includes(g.n)?2+bonus:1;
+    return`<span style="margin-right:.6rem;">${g.i} ${g.n} <strong style="color:var(--teal2);">+${gain}</strong>`;
+  }).join('');
+  return`<div class="inv-growth-banner"><div style="font-size:1.4rem;">📦</div><div><div style="font-family:'Cinzel',serif;font-size:.82rem;font-weight:700;color:var(--teal);margin-bottom:.3rem;">Round ${G.round} Trade Complete — Inventory Grows!</div><div style="font-size:.8rem;">${lines}</div>${sharedRel?`<div style="font-size:.75rem;color:var(--isl);margin-top:.3rem;">✦ Shared faith bonus applied (+${bonus} extra to traded goods)</div>`:''}</div></div>`;
+}
+
+// ════════════════════════════════════
+// SIDEBAR
+// ════════════════════════════════════
+function rSidebar(){
+  document.getElementById('civList').innerHTML=CIVS.map(c=>{
+    const d=G.trades.find(t=>t.cid===c.id&&t.r===G.round);
+    const dot=d?(d.sub?'ok':'wip'):'';
+    return`<div class="ci ${G.civ&&G.civ.id===c.id?'act':''}" onclick="pickCiv('${c.id}')"><span class="ce">${c.e}</span><span><span class="cn">${c.n}</span><span class="cs">${c.r}</span></span><span class="cd ${dot}"></span></div>`;
+  }).join('');
+}
+
+function pickCiv(id){
+  if(currentRole==='teacher'){
+    // Teacher just views on map
+    G.civ=CIVS.find(c=>c.id===id);rSidebar();refreshCivMarkers();return;
+  }
+  G.civ=CIVS.find(c=>c.id===id);sel={route:null,goods:[],partner:null,concepts:[]};
+  rSidebar();nav('student');rStudent();
+}
+
+// ════════════════════════════════════
+// SETUP
+// ════════════════════════════════════
+function rSetupGrid(){
+  document.getElementById('setupGrid').innerHTML=CIVS.map(c=>`
+    <div class="scc ${G.civ&&G.civ.id===c.id?'sel':''}" onclick="setupPick('${c.id}')">
+      <div class="sce">${c.e}</div><div class="scn">${c.n}</div>
+      <div class="scr">${c.r}</div><div class="scd">${c.desc}</div>
+      <div class="scrl">⛪ ${c.rels.join(' · ')}</div>
+      <div class="scgds">${c.goods.map(g=>`<span class="gtag">${g.i} ${g.n}</span>`).join('')}</div>
+    </div>`).join('');
+}
+function setupPick(id){G.civ=CIVS.find(c=>c.id===id);rSetupGrid();}
+function confirmCiv(){
+  if(!G.civ){notif('Select a civilization!');return;}
+  // Init goods state for this civ if not set
+  if(!G.goodsState[G.civ.id])G.goodsState[G.civ.id]=G.civ.goods.map(g=>({...g}));
+  sel={route:null,goods:[],partner:null,concepts:[]};
+  rSidebar();nav('student');rStudent();
+}
+
+// ════════════════════════════════════
+// STUDENT VIEW
+// ════════════════════════════════════
+function rStudent(){
+  const c=G.civ;if(!c)return;
+  const rph=c.rels.map(r=>`<span class="rpill" style="color:${RC[r]||'#888'};border-color:${RC[r]||'#888'};background:${RC[r]||'#888'}20;">${r}</span>`).join('');
+  document.getElementById('civHdr').innerHTML=`<div class="chdr"><div class="che">${c.e}</div><div><div class="chn">${c.n}</div><div class="chs">${c.desc}</div></div><div style="margin-left:auto;text-align:right;"><div style="font-family:'JetBrains Mono',monospace;font-size:.56rem;color:#5a4018;text-transform:uppercase;letter-spacing:.08em;">Religion(s)</div><div style="display:flex;gap:.3rem;flex-wrap:wrap;justify-content:flex-end;margin-top:.26rem;">${rph}</div><div style="font-family:'JetBrains Mono',monospace;font-size:.58rem;color:#7a6030;margin-top:.26rem;">${c.sub} · ${c.r}</div></div></div>`;
+  rStudEvAlert();
+  rGoodsStrip();
+  rInvShelf();rRelPanel();rRouteGrid();rGoodSel();rPartnerGrid();rRelAdv();rCtags();
+  document.getElementById('aiArea').innerHTML='';document.getElementById('conArea').innerHTML='';document.getElementById('cmpArea').innerHTML='';document.getElementById('subst').textContent='';
+  document.getElementById('invGrowthBanner').style.display='none';
+  const ex=G.trades.find(t=>t.cid===c.id&&t.r===G.round);
+  if(ex&&ex.sub){
+    document.getElementById('subst').textContent='✦ Submitted — Round '+G.round;
+    sel={route:ex.route,goods:[...ex.goods],partner:ex.partner,concepts:[...ex.concepts]};
+    document.getElementById('justTxt').value=ex.just;
+    rRouteGrid();rGoodSel();rPartnerGrid();rCtags();rRelAdv();
+  } else document.getElementById('justTxt').value='';
+}
+
+function rGoodsStrip(){
+  const c=G.civ;if(!c)return;
+  const gs=getGoods(c.id);
+  document.getElementById('goodsStrip').innerHTML=gs.map(g=>{
+    const base=c.goods.find(b=>b.n===g.n);const gain=g.q-(base?.q||g.q);
+    return`<div class="gc"><div class="gci">${g.i}</div><div class="gcn">${g.n}</div><div class="gcq">${g.q}</div><div class="gcl">units avail.</div>${gain>0?`<div class="gcup">+${gain}</div>`:''}</div>`;
+  }).join('');
+}
+
+function rStudEvAlert(){
+  const el=document.getElementById('stuEvAlert');
+  if(!G.ev){el.style.display='none';return;}
+  el.style.display='block';
+  el.innerHTML=`<div class="evba"><div style="font-size:1.3rem;">${G.ev.i}</div><div><div class="evu">${G.ev.unit} · Active Event</div><div class="evt">${G.ev.t}</div><div class="evb">${G.ev.d}<br><strong style="color:var(--red);">Trade Impact:</strong> ${G.ev.e}</div></div></div>`;
+}
+
+function rInvShelf(){
+  const c=G.civ;const ul=G.unlocked[c.id]||[];
+  document.getElementById('invGrid').innerHTML=c.inv.map(id=>{
+    const inv=INV[id];if(!inv)return'';
+    const isUL=ul.includes(id);
+    const qp=G.trades.filter(t=>t.cid===c.id&&t.sub&&inv.rp.includes(t.partner));
+    const uq=[...new Set(qp.map(t=>t.partner))].length;
+    const prog=Math.min(uq,inv.rc);const pct=Math.round(prog/inv.rc*100);
+    const rn=inv.rp.map(pid=>{const p=CIVS.find(x=>x.id===pid);return p?p.e:pid;}).join(' ');
+    return`<div class="icard ${isUL?'ul':'lk'}"><span class="ilk">🔒</span><div class="ii">${inv.i}</div><div class="inm">${inv.n}</div><div class="irq">Trade w/ ${inv.rc} of: ${rn}</div>${isUL?`<div class="ibn">✦ ${inv.b}</div>`:`<div class="irq" style="color:var(--teal);">${prog}/${inv.rc} done</div>`}<div class="ibar"><div class="ibf" style="width:${pct}%"></div></div></div>`;
+  }).join('');
+}
+
+function rRelPanel(){
+  const c=G.civ;const rp=c.relP;
+  const sh=CIVS.filter(x=>x.id!==c.id&&x.rels.includes(rp));
+  document.getElementById('relPanel').innerHTML=`<div class="relp" style="border-top:3px solid ${RC[rp]||'#888'};margin:0 1.5rem 1rem;"><h3 style="color:${RC[rp]||'#888'};">⛪ Religion &amp; Trade — ${rp}</h3><p style="font-size:.79rem;color:#4a3818;line-height:1.5;margin-bottom:.6rem;">${RB[rp]||'Shared faith creates trust networks.'}</p><div style="font-family:'JetBrains Mono',monospace;font-size:.58rem;color:#5a4820;margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.08em;">Civilizations sharing ${rp}:</div><div>${sh.length?sh.map(p=>`<span class="rcn" style="color:${RC[rp]};border-color:${RC[rp]};background:${RC[rp]}18;">${p.e} ${p.n}</span>`).join(''):'<span style="font-size:.77rem;color:#7a6030;font-style:italic;">None in current roster</span>'}</div></div>`;
+}
+
+function rRouteGrid(){
+  const c=G.civ;
+  document.getElementById('routeGrid').innerHTML=c.routes.map(rId=>{
+    const ro=ROUTES[rId];
+    const rth=ro.rel.map(x=>`<span class="tag tagr" style="color:${x.c};border-color:${x.c}70;">${x.r}</span>`).join('');
+    return`<div class="ro ${sel.route===rId?'sel':''}" onclick="selR('${rId}')"><div class="rty ${ro.t==='land'?'rtl':'rts'}">${ro.t==='land'?'🐪 Overland':'⛵ Maritime'}</div><div class="rtn">${ro.l}</div><div class="rtd">${ro.d}</div><div class="rtt">${ro.tags.map(t=>`<span class="tag">${t}</span>`).join('')}${rth}</div></div>`;
+  }).join('');
+}
+
+function rGoodSel(){
+  const gs=getGoods(G.civ.id);
+  document.getElementById('goodSel').innerHTML=gs.map(g=>`<div class="gsb ${sel.goods.includes(g.n)?'sel':''}" onclick="togG('${g.n}')"><div class="gsi">${g.i}</div><div class="gsn">${g.n} (${g.q})</div></div>`).join('');
+}
+
+function rPartnerGrid(){
+  const c=G.civ;
+  document.getElementById('partnerGrid').innerHTML=c.partners.map(pid=>{
+    const p=CIVS.find(x=>x.id===pid);if(!p)return'';
+    const rm=p.rels.some(r=>c.rels.includes(r));
+    return`<div class="pb ${sel.partner===pid?'sel':''} ${rm?'rm':''}" onclick="selP('${pid}')" title="${rm?'Shared religion — trade bonus!':''}">${p.e} ${p.n}${rm?` <span style="color:${RC[p.relP]};font-size:.62rem;">✦</span>`:''}</div>`;
+  }).join('');
+}
+
+function rRelAdv(){
+  const c=G.civ;const el=document.getElementById('relAdv');
+  if(!sel.partner){el.innerHTML='Select a partner above to see if shared religion creates a trade advantage.';return;}
+  const p=CIVS.find(x=>x.id===sel.partner);if(!p){el.innerHTML='';return;}
+  const sh=p.rels.filter(r=>c.rels.includes(r));
+  if(sh.length)el.innerHTML=`<strong style="color:${RC[sh[0]]};">✦ Shared Faith Bonus!</strong> Both ${c.n} and ${p.n} practice <strong>${sh.join(', ')}</strong>. ${RB[sh[0]]} <em style="color:var(--teal);">+1 wealth bonus + +1 inventory growth this trade.</em>`;
+  else el.innerHTML=`No shared religion between ${c.n} (${c.rels.join(', ')}) and ${p.n} (${p.rels.join(', ')}). Trade can still occur — but there is no religious trust network to reduce transaction costs.`;
+}
+
+function rCtags(){
+  document.getElementById('ctags').innerHTML=CONCEPTS.map(x=>`<span class="ct ${sel.concepts.includes(x)?'on':''}" onclick="togC('${x}')">${x}</span>`).join('');
+}
+
+function selR(id){sel.route=id;rRouteGrid();}
+function togG(n){if(sel.goods.includes(n))sel.goods=sel.goods.filter(x=>x!==n);else if(sel.goods.length<3)sel.goods.push(n);rGoodSel();}
+function selP(id){sel.partner=id;rPartnerGrid();rRelAdv();}
+function togC(c){if(sel.concepts.includes(c))sel.concepts=sel.concepts.filter(x=>x!==c);else sel.concepts.push(c);rCtags();}
+
+function submitTrade(){
+  if(!G.civ)return;
+  if(!sel.route){notif('Select a trade route.');return;}
+  if(!sel.goods.length){notif('Choose goods to export.');return;}
+  if(!sel.partner){notif('Select a trading partner.');return;}
+  const j=document.getElementById('justTxt').value.trim();
+  if(j.length<40){notif('Write a fuller justification (2–3 sentences min).');return;}
+
+  const partner=CIVS.find(c=>c.id===sel.partner);
+  const sr=partner&&partner.rels.some(r=>G.civ.rels.includes(r));
+
+  // Record trade
+  const d={cid:G.civ.id,r:G.round,route:sel.route,goods:[...sel.goods],partner:sel.partner,concepts:[...sel.concepts],just:j,sub:true,score:null};
+  const idx=G.trades.findIndex(t=>t.cid===G.civ.id&&t.r===G.round);
+  if(idx>=0)G.trades[idx]=d;else G.trades.push(d);
+
+  // Grow goods inventory
+  growGoods(G.civ.id,sel.goods,sr);
+
+  // Show growth banner
+  const banner=buildGrowthBanner(G.civ.id,sel.goods,sr);
+  const be=document.getElementById('invGrowthBanner');
+  be.innerHTML=banner;be.style.display='block';
+
+  document.getElementById('subst').textContent='✦ Submitted — Round '+G.round;
+  rGoodsStrip();rGoodSel();
+  rSidebar();rTradeSumm();rConsequences(sr);rCompare();checkInv();refreshCivMarkers();
+  if(leafMap){
+    activateRouteOnMap(sel.route); // bold the used route
+    drawStudentLine(d);
+  }
+  rTradeLog();
+  notif('Trade submitted! Inventory grows next round. ✦');
+}
+
+function rConsequences(sr){
+  const d=G.trades.find(t=>t.cid===G.civ.id&&t.r===G.round);if(!d)return;
+  const ro=ROUTES[d.route];const p=CIVS.find(c=>c.id===d.partner);
+  const w=d.goods.length*2+(sr?1:0)+(G.ev&&G.ev.id==='plague'&&d.route==='silk-road'?-2:0)+(G.ev&&G.ev.id==='pax'&&d.route==='silk-road'?1:0);
+  const risk=G.ev&&G.ev.id==='plague'&&d.route==='silk-road'?'High ⚠️':ro.t==='land'?'Moderate':'Low';
+  document.getElementById('conArea').innerHTML=`<div class="conp"><div class="cont">⚖ Trade Outcome — Round ${G.round}</div><div class="cong"><div class="cs2"><div class="csl">Wealth Gain</div><div class="csv ${w>0?'up':'dn'}">+${w} 🥇</div></div><div class="cs2"><div class="csl">Religion Bonus</div><div class="csv ${sr?'up':'ne'}">${sr?'+1 Shared Faith':'—'}</div></div><div class="cs2"><div class="csl">Route Risk</div><div class="csv ${risk.includes('High')?'dn':risk==='Low'?'up':'ne'}">${risk}</div></div><div class="cs2"><div class="csl">Goods Traded</div><div class="csv ne" style="font-size:.65rem;">${d.goods.join(', ')}</div></div><div class="cs2"><div class="csl">Partner</div><div class="csv ne" style="font-size:.7rem;">${p?p.e+' '+p.n:'—'}</div></div><div class="cs2"><div class="csl">Inventory</div><div class="csv up" style="font-size:.68rem;">📦 Grew this round</div></div></div>${G.ev?`<div style="font-size:.78rem;color:var(--red);font-style:italic;">⚡ ${G.ev.e.split('.')[0]}.</div>`:''}${sr?`<div style="font-size:.78rem;color:var(--isl);margin-top:.38rem;">✦ Shared ${p.rels.filter(r=>G.civ.rels.includes(r)).join('/')} faith gave +1 inventory bonus.</div>`:''}</div>`;
+}
+
+function rCompare(){
+  const all=G.trades.filter(t=>t.r===G.round&&t.sub);if(all.length<2)return;
+  document.getElementById('cmpArea').innerHTML=`<div style="background:var(--bg2);border:1px solid var(--bdr);border-left:4px solid var(--blue);padding:.82rem;margin-top:.82rem;"><div style="font-family:'JetBrains Mono',monospace;font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;color:var(--blue);margin-bottom:.55rem;">🌐 All Civilizations This Round</div>${all.map(t=>{const cv=CIVS.find(c=>c.id===t.cid);const ro=ROUTES[t.route];const p=CIVS.find(c=>c.id===t.partner);return`<div style="display:flex;gap:.45rem;align-items:center;padding:.28rem 0;border-bottom:1px solid var(--bdr2);font-size:.78rem;">${cv.e} ${cv.n}<span style="font-family:'JetBrains Mono',monospace;font-size:.6rem;padding:.1rem .38rem;background:var(--blue);color:#fff;">${ro.l}</span><span style="color:#5a4820;">→ ${p?p.e+p.n:'—'}</span><span style="color:#7a6030;margin-left:auto;font-size:.7rem;">${t.goods.join(', ')}</span></div>`;}).join('')}</div>`;
+}
+
+async function getAI(){
+  const c=G.civ;const j=document.getElementById('justTxt').value.trim();
+  if(j.length<20){notif('Write justification first.');return;}
+  if(!sel.route||!sel.partner){notif('Complete selections first.');return;}
+  const btn=document.getElementById('aibtn');btn.disabled=true;btn.textContent='Consulting scholars...';
+  document.getElementById('aiArea').innerHTML=`<div class="aifb"><div class="aifbh"><span class="ldot"></span>Tutor Feedback</div><div class="aifbb" style="color:#7a6030;font-style:italic;">Reviewing your decision...</div></div>`;
+  const ro=ROUTES[sel.route];const p=CIVS.find(x=>x.id===sel.partner);
+  const sr=p&&p.rels.some(r=>c.rels.includes(r));
+  const prompt=`You are an AP World History teacher for a 1200-1450 trade simulation.
+Student's civ: ${c.n} (${c.r}). Religion: ${c.rels.join(', ')}.
+Route: ${ro.l} (${ro.t}). Goods: ${sel.goods.join(', ')}. Partner: ${p?p.n+' ('+p.rels.join(',')+')':'none'}.
+Same religion: ${sr}. Concepts tagged: ${sel.concepts.join(', ')||'none'}.
+${G.ev?'Active event: '+G.ev.t+'. '+G.ev.d:'No active event.'}
+Student wrote: "${j}"
+Give exactly 3 short paragraphs labeled ✦ Strength:, ⚠ Improve:, 📚 AP Connection:. Under 130 words total. Address student directly.`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();const txt=data.content?.map(i=>i.text||'').join('')||'Unable to generate feedback.';
+    document.getElementById('aiArea').innerHTML=`<div class="aifb"><div class="aifbh">🤖 Tutor Feedback</div><div class="aifbb">${txt.replace(/\n/g,'<br>')}</div></div>`;
+  }catch{document.getElementById('aiArea').innerHTML=`<div class="aifb"><div class="aifbh">⚠ Unavailable</div><div class="aifbb">Could not reach the tutor. Try again.</div></div>`;}
+  btn.disabled=false;btn.textContent='🤖 Tutor Feedback';
+}
+
+function checkInv(){
+  const c=G.civ;if(!c)return;const ul=G.unlocked[c.id];
+  c.inv.forEach(id=>{if(ul.includes(id))return;const inv=INV[id];if(!inv)return;
+    const qp=G.trades.filter(t=>t.cid===c.id&&t.sub&&inv.rp.includes(t.partner));
+    const uq=[...new Set(qp.map(t=>t.partner))].length;
+    if(uq>=inv.rc){ul.push(id);showUnlock(inv);}
+  });
+  rInvShelf();
+}
+
+function showUnlock(inv){
+  document.getElementById('ufIcon').textContent=inv.i;
+  document.getElementById('ufTitle').textContent='Innovation Unlocked: '+inv.n;
+  document.getElementById('ufBody').innerHTML=`<strong>${inv.b}</strong><br><br>${inv.d}`;
+  document.getElementById('ufPanel').style.display='block';
+}
+
+// ════════════════════════════════════
+// TEACHER
+// ════════════════════════════════════
+function rRoster(){
+  document.getElementById('rosterBody').innerHTML=CIVS.map(c=>{
+    const d=G.trades.find(t=>t.cid===c.id&&t.r===G.round);
+    const st=!d?'<span style="color:#aaa;font-family:JetBrains Mono,monospace;font-size:.65rem;">Not started</span>':d.sub?'<span style="color:var(--teal2);font-family:JetBrains Mono,monospace;font-size:.65rem;">✦ Submitted</span>':'<span style="color:var(--amb);font-family:JetBrains Mono,monospace;font-size:.65rem;">In progress</span>';
+    const rh=c.rels.map(r=>`<span style="font-size:.62rem;padding:.08rem .3rem;border-radius:2px;color:${RC[r]||'#888'};border:1px solid ${RC[r]||'#888'};margin-right:2px;font-family:JetBrains Mono,monospace;">${r}</span>`).join('');
+    const gs=getGoods(c.id);const gStr=gs.map(g=>`${g.i}${g.q}`).join(' ');
+    return`<tr><td>${c.e} <strong>${c.n}</strong></td><td>${rh}</td><td style="font-size:.7rem;">${gStr}</td><td>${st}</td></tr>`;
+  }).join('');
+}
+
+function rStats(){
+  const sub=G.trades.filter(t=>t.r===G.round&&t.sub).length;
+  document.getElementById('simStats').innerHTML=`<div>Round: <strong>${G.round} of ${G.maxR}</strong></div><div>Submitted: <strong>${sub}/${CIVS.length}</strong></div><div>Active event: <strong>${G.ev?G.ev.t:'None'}</strong></div><div>Period: <strong>c. 1200–1450 CE</strong></div><div>AP Units: <strong>2 · 3 · 4</strong></div>`;
+}
+
+function rEvGrid(){
+  document.getElementById('evGrid').innerHTML=EVENTS.map(ev=>`<div class="evc ${G.selEv===ev.id?'sel':''}" onclick="selEv('${ev.id}')"><div class="evu2">${ev.unit} · ${ev.i}</div><div class="evt2">${ev.t}</div><div class="evd">${ev.d}</div></div>`).join('');
+}
+function selEv(id){G.selEv=G.selEv===id?null:id;rEvGrid();}
+function activateEv(){
+  if(!G.selEv){notif('Select an event first.');return;}
+  G.ev=EVENTS.find(e=>e.id===G.selEv);
+  document.getElementById('aevb').style.display='flex';document.getElementById('aevt').textContent='Active: '+G.ev.t;
+  document.getElementById('aevlabel').textContent='Active: '+G.ev.t;
+  rStats();notif('Event activated: '+G.ev.t);
+}
+function clearEv(){
+  G.ev=null;G.selEv=null;document.getElementById('aevb').style.display='none';document.getElementById('aevlabel').textContent='';
+  rEvGrid();rStats();notif('Event cleared.');
+}
+
+function rTradeSumm(){
+  const all=G.trades.filter(t=>t.r===G.round&&t.sub);const el=document.getElementById('tradeSumm');
+  if(!all.length){el.innerHTML='<p style="color:#7a6030;font-style:italic;">No trades submitted yet this round.</p>';rRoster();return;}
+  el.innerHTML=all.map(t=>{const cv=CIVS.find(c=>c.id===t.cid);const ro=ROUTES[t.route];const p=CIVS.find(c=>c.id===t.partner);return`<div style="display:flex;gap:.65rem;align-items:center;padding:.42rem 0;border-bottom:1px solid var(--bdr2);">${cv.e} <strong>${cv.n}</strong> → ${ro.l}<span style="color:#5a4820;font-size:.8rem;">Trading ${t.goods.join(', ')} with ${p?p.e+' '+p.n:'—'}</span></div>`;}).join('');
+  rRoster();
+}
+
+// ════════════════════════════════════
+// DEBRIEF
+// ════════════════════════════════════
+function rDbCards(){
+  const all=G.trades.filter(t=>t.r===G.round&&t.sub);const el=document.getElementById('dbCards');
+  if(!all.length){el.innerHTML='<p style="color:#7a6030;font-style:italic;">No trades yet.</p>';return;}
+  el.innerHTML=all.map(t=>{const cv=CIVS.find(c=>c.id===t.cid);const ro=ROUTES[t.route];const p=CIVS.find(c=>c.id===t.partner);const sr=p&&p.rels.some(r=>cv.rels.includes(r));
+    return`<div class="dbc"><div class="dbe">${cv.e}</div><div><div class="dbr">${cv.n} · ${ro.l} → ${p?p.n:'—'} ${sr?`<span style="color:var(--isl);font-size:.6rem;">✦ Shared faith</span>`:''}</div><div style="font-size:.78rem;color:var(--ink);">Goods: ${t.goods.join(', ')}</div><div style="font-size:.7rem;color:#5a4820;">Concepts: ${t.concepts.length?t.concepts.join(', '):'none'}</div><div class="dbj">"${t.just}"</div></div><div><div class="dbsb">${t.score!==null?t.score+'/10':'—'}</div><div class="dbsl">Score</div></div></div>`;
+  }).join('');
+}
+
+function rDbInv(){
+  const el=document.getElementById('dbInv');
+  el.innerHTML=CIVS.map(c=>{
+    const ul=G.unlocked[c.id]||[];if(!ul.length)return'';
+    return`<div class="card" style="margin-bottom:.9rem;"><h2>${c.e} ${c.n} — ${ul.length} Innovation${ul.length>1?'s':''} Unlocked</h2><div style="display:flex;flex-wrap:wrap;gap:.55rem;">${ul.map(id=>{const inv=INV[id];return inv?`<div style="background:var(--goldf);border:1px solid var(--gold);padding:.65rem .8rem;min-width:140px;"><div style="font-size:1.3rem;">${inv.i}</div><div style="font-family:'Cinzel',serif;font-size:.74rem;font-weight:700;">${inv.n}</div><div style="font-size:.6rem;color:var(--teal);font-family:'JetBrains Mono',monospace;">${inv.b}</div><div style="font-size:.7rem;color:#4a3818;margin-top:.28rem;line-height:1.38;">${inv.d}</div></div>`:''}).join('')}</div></div>`;
+  }).filter(Boolean).join('')||'<p style="color:#7a6030;font-style:italic;">No inventions unlocked yet.</p>';
+}
+
+function rScoring(){
+  const all=G.trades.filter(t=>t.r===G.round&&t.sub);const el=document.getElementById('scorePanel');
+  if(!all.length){el.innerHTML='<p style="color:#7a6030;font-style:italic;">No trades to score.</p>';return;}
+  el.innerHTML=all.map(t=>{const cv=CIVS.find(c=>c.id===t.cid);const gl=t.score===null?'':t.score>=9?'A':t.score>=7?'B':t.score>=5?'C':'D';const gc=t.score===null?'':t.score>=9?'ga':t.score>=7?'gbb':t.score>=5?'gc2':'gd';
+    return`<div class="se"><div>${cv.e} <strong>${cv.n}</strong><br><span style="font-size:.7rem;color:#5a4820;font-style:italic;">"${t.just.substring(0,65)}${t.just.length>65?'...':''}"</span></div><input class="sinp" type="number" min="0" max="10" value="${t.score!==null?t.score:''}" placeholder="0–10" onchange="setScore('${t.cid}',${t.r},this.value)"><span class="gb2 ${gc}">${gl}</span></div>`;
+  }).join('');
+}
+
+function setScore(cid,r,v){const t=G.trades.find(t=>t.cid===cid&&t.r===r);if(t)t.score=parseInt(v)||0;rDbCards();rScoring();}
+
+function rHeatmap(){
+  const all=G.trades.filter(t=>t.sub);const counts={};CONCEPTS.forEach(c=>{counts[c]=0;});all.forEach(t=>t.concepts.forEach(c=>{if(counts[c]!==undefined)counts[c]++;}));
+  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]);const mx=sorted[0]?.[1]||1;
+  document.getElementById('hmGrid').innerHTML=sorted.map(([c,n])=>{const h=n/mx;const bg=`rgba(${h>.6?'138,24,24':h>.3?'200,144,42':'24,90,74'},${.15+h*.55})`;return`<div class="hmc" style="background:${bg};"><div class="hml">${c}</div><div class="hmv">${n}</div></div>`;}).join('');
+}
+
+function rRelAnalysis(){
+  const el=document.getElementById('relAnalysis');if(!el)return;
+  const all=G.trades.filter(t=>t.sub);
+  if(!all.length){el.innerHTML='<p style="color:#7a6030;font-style:italic;">Submit trades to see religion analysis.</p>';return;}
+  let isl=0,sr=0;
+  all.forEach(t=>{const cv=CIVS.find(c=>c.id===t.cid);const p=CIVS.find(c=>c.id===t.partner);if(p&&p.rels.some(r=>cv.rels.includes(r)))sr++;if(cv.rels.includes('Islam'))isl++;});
+  el.innerHTML=`<p style="font-size:.84rem;color:#4a3818;line-height:1.6;margin-bottom:1rem;">In 1200–1450, shared religious identity often created <strong>trust networks</strong> that facilitated long-distance trade. Muslim merchants controlled the Indian Ocean from East Africa to Southeast Asia. Buddhist pilgrim routes doubled as trade corridors. Christian merchants dominated the Mediterranean.</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.9rem;margin-bottom:1rem;">
+    <div style="background:#1a6a2a18;border:1px solid #1a6a2a;padding:.9rem;"><div style="font-family:'JetBrains Mono',monospace;font-size:.6rem;color:#1a6a2a;text-transform:uppercase;margin-bottom:.28rem;">Islamic Trades</div><div style="font-family:'JetBrains Mono',monospace;font-size:1.3rem;font-weight:700;color:#1a6a2a;">${isl}</div><div style="font-size:.78rem;color:#4a3818;">by Muslim civilizations</div></div>
+    <div style="background:var(--goldf);border:1px solid var(--gold);padding:.9rem;"><div style="font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--gold);text-transform:uppercase;margin-bottom:.28rem;">Shared-Religion Trades</div><div style="font-family:'JetBrains Mono',monospace;font-size:1.3rem;font-weight:700;color:var(--gold);">${sr}/${all.length}</div><div style="font-size:.78rem;color:#4a3818;">between same-religion partners</div></div>
+  </div>
+  <div style="font-size:.84rem;color:#4a3818;line-height:1.6;background:var(--bg2);padding:.8rem;border-left:3px solid #1a6a2a;"><strong>AP World Key Idea (Unit 2):</strong> Islam functioned as a "commercial network" — Islamic law provided standardized contracts (qirad), Arabic as a shared commercial language, and mosques as trusted meeting points across Afro-Eurasia. Ibn Battuta's 75,000-mile journey relied entirely on Islamic hospitality networks from Mali to China.</div>`;
+}
+
+function rDisc(){document.getElementById('discQs').innerHTML=DISCUSS.map(q=>`<div style="padding:.6rem 0;border-bottom:1px solid var(--bdr2);">${q}</div>`).join('');}
+
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('act',['decisions','inventions','scoring','concepts','religion','discuss'][i]===t));
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('act'));
+  document.getElementById('tab-'+t).classList.add('act');
+  if(t==='inventions')rDbInv();if(t==='religion')rRelAnalysis();
+}
+
+// ════════════════════════════════════
+// ROUND ADVANCE
+// ════════════════════════════════════
+function advRound(){
+  if(G.round>=G.maxR){notif('Simulation complete! Move to Debrief.');nav('debrief');return;}
+  G.round++;sel={route:null,goods:[],partner:null,concepts:[]};
+  document.getElementById('rind').textContent='Round '+G.round+' of '+G.maxR;
+  document.getElementById('rstatus').textContent='Round '+G.round+' active';
+  document.getElementById('logRnd').textContent=G.round;
+  rRoster();rStats();rTradeSumm();
+  if(G.civ){
+    rStudent();
+    // Show banner for goods that grew
+    const c=G.civ;const gs=getGoods(c.id);
+    const grew=gs.filter(g=>{const base=c.goods.find(b=>b.n===g.n);return base&&g.q>base.q;});
+    if(grew.length)notif('📦 Inventory grew from last round\'s trades!');
+  }
+  notif('Advanced to Round '+G.round);
+}
+
+// ════════════════════════════════════
+// UTIL
+// ════════════════════════════════════
+function notif(msg){document.querySelector('.notif')?.remove();const el=document.createElement('div');el.className='notif';el.textContent=msg;document.body.appendChild(el);setTimeout(()=>el.remove(),3200);}
+
+// shake keyframe
+const ks=document.createElement('style');ks.textContent='@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}';document.head.appendChild(ks);
+</script>
+</body>
+</html>
