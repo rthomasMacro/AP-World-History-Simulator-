@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Silk Road Grand Bazaar — AP World History</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#0a0804;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:'JetBrains Mono',monospace;overflow:hidden;}
+#shell{position:relative;border:3px solid #c8902a;box-shadow:0 0 40px rgba(200,144,42,.35);}
+#gameCanvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;}
+#topHud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:5px 7px;pointer-events:none;z-index:20;}
+.hb{background:rgba(8,5,1,.92);border:1.5px solid #c8902a;padding:4px 8px;min-width:128px;}
+.ht{font-size:8px;color:#c8902a;letter-spacing:.13em;text-transform:uppercase;margin-bottom:2px;}
+.hv{font-size:11px;color:#f0e0a0;font-weight:700;}
+.hv.gold{color:#f0d040;}
+.ibtn{pointer-events:all;margin-top:3px;font-size:7px;background:#1a1006;border:1px solid #c8902a;color:#c8902a;padding:2px 5px;cursor:pointer;font-family:'JetBrains Mono',monospace;}
+.ibtn:hover{background:#2a1808;}
+#botBar{position:absolute;bottom:0;left:0;right:0;background:rgba(8,5,1,.94);border-top:2px solid #c8902a;padding:4px 9px;display:flex;align-items:center;justify-content:space-between;pointer-events:none;z-index:20;}
+.bmsg{font-size:10px;color:#f0e0a0;max-width:480px;}
+.bkeys{font-size:8px;color:#5a4020;display:flex;gap:9px;}
+.kb{background:#1a1006;border:1px solid #4a3018;color:#c8902a;padding:1px 5px;border-radius:2px;font-size:7px;}
+#invPanel{display:none;position:absolute;top:38px;right:7px;z-index:30;background:#0c0804;border:2px solid #c8902a;width:172px;}
+#invPanel.open{display:block;}
+.ih{background:#181006;border-bottom:1px solid #c8902a;padding:5px 8px;font-size:8px;color:#c8902a;text-transform:uppercase;letter-spacing:.12em;}
+.ir{display:flex;align-items:center;gap:5px;padding:4px 8px;border-bottom:1px solid #181008;font-size:9px;color:#f0e0a0;}
+.ir:last-child{border-bottom:none;}
+.ie{padding:8px;font-size:9px;color:#4a3820;font-style:italic;}
+#tw{display:none;position:absolute;inset:0;z-index:50;background:rgba(4,2,0,.88);align-items:center;justify-content:center;}
+#tw.open{display:flex;}
+.tbox{background:#0c0804;border:3px solid #c8902a;width:500px;max-height:84vh;overflow-y:auto;box-shadow:0 0 50px rgba(200,144,42,.45);}
+.thdr{background:#181006;border-bottom:2px solid #c8902a;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;}
+.ttl{font-family:'Cinzel',serif;font-size:13px;color:#e8b85a;font-weight:700;}
+.tcl{background:transparent;border:1px solid #4a2810;color:#c8902a;cursor:pointer;padding:2px 7px;font-size:10px;font-family:'JetBrains Mono',monospace;}
+.tcl:hover{background:#1e1008;}
+.tbody{padding:10px 12px;}
+.tnpc{display:flex;gap:8px;padding:7px;background:#120a04;border:1px solid #2a1808;margin-bottom:10px;}
+.tnpce{font-size:24px;}
+.tnn{font-family:'Cinzel',serif;font-size:11px;color:#e8b85a;font-weight:700;}
+.tnr{font-size:8px;color:#7a6030;margin-bottom:2px;}
+.tnd{font-size:9px;color:#b09050;font-style:italic;line-height:1.4;}
+.tco{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;padding:5px 8px;background:#120a04;border:1px solid #2a1808;}
+.tcol{font-size:8px;color:#7a6030;text-transform:uppercase;letter-spacing:.1em;}
+.tcov{font-size:13px;color:#f0d040;font-weight:700;}
+.tst{font-size:8px;color:#c8902a;text-transform:uppercase;letter-spacing:.13em;border-bottom:1px solid #2a1808;padding-bottom:3px;margin-bottom:5px;}
+.tsec{margin-bottom:12px;}
+.ti{display:flex;align-items:center;gap:6px;padding:5px 7px;border:1px solid #1e1508;background:#120a04;margin-bottom:3px;cursor:pointer;transition:all .1s;}
+.ti:hover{border-color:#c8902a;background:#1c1308;}
+.ti.sel{border-color:#e8b85a;background:#221800;}
+.te{font-size:13px;width:18px;text-align:center;}
+.tin{flex:1;}
+.tn{font-size:10px;color:#f0e0a0;font-weight:600;}
+.tf{font-size:8px;color:#6a5020;}
+.tq{font-size:11px;color:#e8b85a;font-weight:700;min-width:26px;text-align:right;}
+.tp{font-size:9px;min-width:46px;text-align:right;}
+.tbtn{width:100%;padding:6px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;border:none;cursor:pointer;margin-top:6px;transition:all .15s;}
+.tbuy{background:#c8902a;color:#0a0804;}.tbuy:hover{background:#e8b85a;}
+.tsel{background:#1a6a2a;color:#e0f8e0;}.tsel:hover{background:#2a8a3a;}
+.tbtn:disabled{opacity:.4;cursor:not-allowed;}
+.tres{display:none;margin-top:6px;padding:7px 9px;font-size:9px;line-height:1.5;}
+.tok{background:#0e200e;border:1px solid #1a6a2a;color:#90d870;}
+.terr{background:#20100e;border:1px solid #6a1a1a;color:#d88070;}
+.toast{position:absolute;top:45%;left:50%;transform:translate(-50%,-50%);background:#0c0804;border:2px solid #c8902a;padding:8px 15px;font-size:11px;color:#f0e0a0;text-align:center;z-index:99;pointer-events:none;white-space:nowrap;animation:tp .25s ease;}
+@keyframes tp{from{opacity:0;transform:translate(-50%,-60%);}to{opacity:1;transform:translate(-50%,-50%);}}
+#cs{position:absolute;inset:0;z-index:60;background:rgba(4,2,0,.97);display:flex;align-items:center;justify-content:center;}
+.csbox{background:#0c0804;border:3px solid #c8902a;padding:18px 22px;max-width:550px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 0 50px rgba(200,144,42,.45);}
+.cstl{font-family:'Cinzel',serif;font-size:15px;color:#e8b85a;font-weight:900;letter-spacing:.08em;text-align:center;margin-bottom:3px;}
+.cssub{font-size:8px;color:#7a6030;text-align:center;letter-spacing:.09em;margin-bottom:13px;}
+.csgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px;}
+.csc{border:2px solid #2a1808;background:#120a04;padding:9px 7px;cursor:pointer;transition:all .15s;text-align:center;}
+.csc:hover{border-color:#c8902a;background:#1c1308;transform:translateY(-1px);}
+.csc.on{border-color:#e8b85a;background:#221800;}
+.cse{font-size:20px;margin-bottom:3px;}
+.csn{font-family:'Cinzel',serif;font-size:8.5px;color:#e8b85a;font-weight:700;margin-bottom:2px;}
+.csr{font-size:7px;color:#6a5020;margin-bottom:4px;}
+.csg{display:flex;flex-wrap:wrap;gap:2px;justify-content:center;}
+.cst{font-size:6.5px;padding:1px 3px;background:#2a1808;border:1px solid #3a2410;color:#a08040;}
+.cssbtn{width:100%;padding:8px;font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:.07em;background:#c8902a;color:#0a0804;border:none;cursor:pointer;}
+.cssbtn:hover{background:#e8b85a;}
+.cssbtn:disabled{opacity:.4;cursor:not-allowed;}
+</style>
+</head>
+<body>
+<div id="shell">
+  <div id="cs">
+    <div class="csbox">
+      <div class="cstl">⚖ Silk Road Grand Bazaar</div>
+      <div class="cssub">C. 1300 CE · SELECT YOUR CIVILIZATION</div>
+      <div class="csgrid" id="csgrid"></div>
+      <button class="cssbtn" id="cssbtn" disabled onclick="startGame()">Enter the Market ✦</button>
+    </div>
+  </div>
+  <div id="topHud">
+    <div class="hb"><div class="ht" id="hregion">Region</div><div class="hv" id="hciv">—</div><div class="hv gold">🪙 <span id="hcoins">120</span></div></div>
+    <div class="hb" style="text-align:center;min-width:185px;"><div class="ht">⚖ Silk Road Grand Bazaar</div><div style="font-size:7px;color:#c8902a;">c. 1300 CE · Afro-Eurasian Trade Hub</div></div>
+    <div class="hb" style="text-align:right;"><div class="ht">Cargo</div><div class="hv" id="hcargo">0 items</div><button class="ibtn" onclick="toggleInv()">📦 Bag [I]</button></div>
+  </div>
+  <canvas id="gameCanvas"></canvas>
+  <div id="botBar">
+    <div class="bmsg" id="bmsg">Welcome to the market!</div>
+    <div class="bkeys">
+      <span><span class="kb">WASD</span> Move</span>
+      <span><span class="kb">Shift+T</span> Trade</span>
+      <span><span class="kb">I</span> Bag</span>
+      <span><span class="kb">ESC</span> Close</span>
+    </div>
+  </div>
+  <div id="invPanel"><div class="ih">📦 Your Inventory</div><div id="invrows"></div></div>
+  <div id="tw">
+    <div class="tbox">
+      <div class="thdr"><div class="ttl">⚖ Trade Negotiation</div><button class="tcl" onclick="closeTrade()">✕ [ESC]</button></div>
+      <div class="tbody">
+        <div id="tnpcinfo"></div>
+        <div class="tco"><span class="tcol">Your Coins</span><span class="tcov">🪙 <span id="tcoins">120</span></span></div>
+        <div class="tsec"><div class="tst">🛒 Buy from Merchant</div><div id="tbuylist"></div></div>
+        <div class="tsec"><div class="tst">💰 Sell Your Goods</div><div id="tselllist"></div></div>
+        <div class="tres" id="tres"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+// ═══ DATA ═══
+const CIVS={
+  // bc=body/tunic, hc=hair, ac=accent/belt
+  mongol:   {n:'Mongol Empire',   e:'🏹',r:'Central Asia', bc:0xC04020,hc:0x2A1A08,ac:0xD09020,goods:[{e:'🐴',n:'Horses',q:4,v:25},{e:'🪶',n:'Furs',q:3,v:18},{e:'🗡️',n:'Iron Arms',q:2,v:30},{e:'🐄',n:'Livestock',q:3,v:15}]},
+  song:     {n:'Song/Yuan China', e:'🏯',r:'East Asia',    bc:0x2858B0,hc:0x1A1208,ac:0xD8B820,goods:[{e:'🧵',n:'Silk',q:5,v:40},{e:'🍵',n:'Tea',q:4,v:20},{e:'🏺',n:'Porcelain',q:3,v:35},{e:'🧨',n:'Gunpowder',q:2,v:45}]},
+  mali:     {n:'Mali Empire',     e:'☀️',r:'West Africa',  bc:0xD4A020,hc:0x180C04,ac:0xC04820,goods:[{e:'🥇',n:'Gold',q:5,v:60},{e:'🧂',n:'Salt',q:4,v:22},{e:'📚',n:'Manuscripts',q:2,v:38},{e:'🌰',n:'Kola Nuts',q:3,v:12}]},
+  swahili:  {n:'Swahili Coast',   e:'⛵',r:'East Africa',  bc:0x207860,hc:0x1A3A18,ac:0x90C840,goods:[{e:'🐘',n:'Ivory',q:3,v:55},{e:'🥇',n:'Gold',q:2,v:60},{e:'🐚',n:'Shells',q:5,v:10},{e:'🌴',n:'Timber',q:4,v:18}]},
+  delhi:    {n:'Delhi Sultanate', e:'🕌',r:'South Asia',   bc:0x507830,hc:0x281408,ac:0xE87020,goods:[{e:'💎',n:'Gemstones',q:2,v:70},{e:'🌶️',n:'Spices',q:5,v:35},{e:'🧶',n:'Cotton',q:6,v:25},{e:'⚔️',n:'Steel Blades',q:2,v:40}]},
+  malacca:  {n:'Malacca',         e:'🌊',r:'SE Asia',      bc:0x185098,hc:0x281808,ac:0x38A8D0,goods:[{e:'🌺',n:'Cloves',q:4,v:45},{e:'🌴',n:'Nutmeg',q:3,v:50},{e:'🐢',n:'Tortoiseshell',q:2,v:30},{e:'💛',n:'Beeswax',q:3,v:20}]},
+  persia:   {n:'Ilkhanate Persia',e:'🌹',r:'Middle East',  bc:0x782878,hc:0x3A2018,ac:0xC8A030,goods:[{e:'🥤',n:'Glass',q:3,v:32},{e:'🌸',n:'Carpets',q:3,v:48},{e:'📖',n:'Manuscripts',q:3,v:38},{e:'🫙',n:'Ceramics',q:4,v:28}]},
+  morocco:  {n:'Marinid Morocco', e:'🏔️',r:'North Africa', bc:0xA04818,hc:0x381808,ac:0xD8C028,goods:[{e:'🥈',n:'Silver',q:3,v:42},{e:'🏺',n:'Pottery',q:4,v:20},{e:'🐪',n:'Camels',q:2,v:55},{e:'⛏️',n:'Copper',q:3,v:30}]},
+  byzantium:{n:'Byzantine Empire',e:'⚜️',r:'Anatolia',     bc:0x981828,hc:0x583018,ac:0xD0A020,goods:[{e:'🪙',n:'Gold Coin',q:3,v:50},{e:'🧣',n:'Luxury Cloth',q:3,v:45},{e:'🫒',n:'Olive Oil',q:4,v:22},{e:'🍷',n:'Wine',q:4,v:25}]},
+};
+// Only 3 merchant NPCs total — player picks a 4th civ from the picker
+// These 3 always appear; if player picks one of these, that NPC is replaced
+const NPC_POOL=[
+  {id:'mali',    x:240,y:185,f:0,t:"Saharan gold — Mansa Musa's treasury overflows. Make me an offer, traveler."},
+  {id:'persia',  x:540,y:200,f:0,t:"Persian carpets hold wisdom woven into every thread. A true luxury!"},
+  {id:'song',    x:390,y:390,f:1,t:"Finest silk from the Yellow River. What does your land offer in trade?"},
+];
+
+// ═══ STATE ═══
+let pCiv=null,pCoins=120,pInv=[],nearNPC=null,tradeOpen=false,invOpen=false;
+let selBuy=null,selSell=null,curNPC=null;
+const TILE=32,MW=25,MH=20,CW=MW*TILE,CH=MH*TILE;
+
+document.getElementById('gameCanvas').width=CW;
+document.getElementById('gameCanvas').height=CH;
+document.getElementById('shell').style.width=CW+'px';
+
+// NPC goods live state
+const npcGoods={};
+Object.entries(CIVS).forEach(([id,c])=>{npcGoods[id]=c.goods.map(g=>({...g}));});
+
+// ═══ CIV SELECT ═══
+(function(){
+  const g=document.getElementById('csgrid');
+  Object.entries(CIVS).forEach(([id,c])=>{
+    const el=document.createElement('div');
+    el.className='csc';el.id='cs_'+id;
+    el.innerHTML=`<div class="cse">${c.e}</div><div class="csn">${c.n}</div><div class="csr">${c.r}</div><div class="csg">${c.goods.map(g=>`<span class="cst">${g.e}${g.n}</span>`).join('')}</div>`;
+    el.onclick=()=>{pCiv=id;document.querySelectorAll('.csc').forEach(x=>x.classList.remove('on'));el.classList.add('on');document.getElementById('cssbtn').disabled=false;};
+    g.appendChild(el);
+  });
+})();
+
+function startGame(){
+  if(!pCiv)return;
+  const c=CIVS[pCiv];
+  // Filter out player's own civ from NPCS
+  pInv=c.goods.map(g=>({...g,fc:pCiv}));
+  pCoins=120;
+  document.getElementById('cs').style.display='none';
+  updateHUD();renderInv();
+  setMsg(`Welcome, ${c.e} ${c.n} merchant! Walk to a stall and press Shift+T to trade.`);
+  // Resume the Phaser scene — this is what was missing
+  const scene=game.scene.getScene('Market');
+  if(scene&&scene.scene.isPaused()){
+    scene.scene.resume();
+  } else if(scene){
+    scene.scene.restart();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  FF6-STYLE SPRITE ENGINE
+//  Each character: 16×24 px, 4 dirs × 3 walk frames = 12 frames
+//  Sprite sheet width = 192px (16×12), height = 24px
+//
+//  Palette per character:
+//   . = transparent
+//   K = black outline
+//   S = skin
+//   D = skin-dark (shadow)
+//   H = hair
+//   h = hair-dark
+//   B = body/tunic
+//   b = body-dark
+//   A = accent color
+//   a = accent-dark
+//   L = leg/pants
+//   l = leg-dark
+//   O = shoe
+//   W = white/highlight
+//
+//  Each frame defined as 24-row × 16-col string array
+// ═══════════════════════════════════════════════════════════════
+
+// BASE FRAME DATA — one template per direction, step encodes leg offset
+// We define the 4 directional base poses; walk frames just shift legs
+
+// DOWN-facing base (most detail visible)
+const F_DN=[
+  '....KKHHHKK.....',  // 0  hair top
+  '...KHHHHHHKK....',  // 1
+  '..KHHhHHHhHHK...',  // 2  hair sides over face
+  '..KHSSSSSSHhK...',  // 3  face top
+  '..KHSDWSWDHhK...',  // 4  eyes (W=white catchlight, D=pupil-dark)
+  '..KHSSSSSSHhK...',  // 5
+  '..KHSSSKSSHhK...',  // 6  mouth dot
+  '..KHSSSSSShHK...',  // 7  face bottom
+  '...KKSSSSKhK....',  // 8  chin
+  '.....KKKKKK.....',  // 9  neck gap
+  '....KBBbBBK.....',  // 10 shoulder top
+  '..KKBBBBBBKK...',   // 11 torso+arms start
+  '..KbBBBBBBbK...',  // 12
+  '..KbBAaAABbK...',  // 13 belt
+  '..KbBBBBBBbK...',  // 14
+  '..KKBBBBBBKK...',   // 15 torso bottom
+  '....KLLKLLK.....',  // 16 legs top
+  '....KLLKLLk.....',  // 17
+  '....KLlKLlK.....',  // 18
+  '....KLLKLLk.....',  // 19
+  '...KOOKKOOkK...',  // 20 shoes
+  '...KOOKKOOkK...',  // 21
+  '................',  // 22
+  '................',  // 23
+];
+
+// UP-facing base (back of head, big hair)
+const F_UP=[
+  '...KKHHHHkKK...',  // 0  hair top big
+  '..KHHHHHHHhK...',  // 1
+  '..KHHHhHHHhK...',  // 2
+  '..KHHHhHHHhK...',  // 3  back of head, no face
+  '..KHHHhHHHhK...',  // 4
+  '..KHhHHHHHhK...',  // 5
+  '..KHHHhHHHhK...',  // 6
+  '..KHhHhHhHhK...',  // 7
+  '...KKhHHhKK....',  // 8  back neck
+  '.....KKKKKK.....',  // 9
+  '....KBBbBBK.....',  // 10
+  '..KKBBBBBBKK...',   // 11
+  '..KbBBBBBBbK...',  // 12
+  '..KbBAaAABbK...',  // 13
+  '..KbBBBBBBbK...',  // 14
+  '..KKBBBBBBKK...',   // 15
+  '....KLLKLLK.....',  // 16
+  '....KLLKLLk.....',  // 17
+  '....KLlKLlK.....',  // 18
+  '....KLLKLLk.....',  // 19
+  '...KOOKKOOkK...',  // 20
+  '...KOOKKOOkK...',  // 21
+  '................',  // 22
+  '................',  // 23
+];
+
+// LEFT-facing base (side profile)
+const F_LT=[
+  '....KHHHKk.....',   // 0
+  '...KHHHHhK......',  // 1  hair front pokes out
+  '..KHHHHhSSK.....',  // 2
+  '.KHhHSSSDSSK....',  // 3  eye visible
+  '.KHhHSWSSSSK....',  // 4  catchlight
+  '.KHhHSSSSSSK....',  // 5
+  '.KHhHSSKSSSK....',  // 6  mouth
+  '..KHhHSSSSSK....',  // 7
+  '...KHhSSKKK.....',  // 8  chin
+  '....KKKKK.......',  // 9
+  '.....KBBBbK.....',  // 10
+  '....KBBBBbK......', // 11
+  '...KBBBBBbK......', // 12
+  '...KBAaAAbK......', // 13 belt
+  '...KBBBBBbK......', // 14
+  '....KBBBBbKK.....',  // 15
+  '....KLLLKkK.....',  // 16
+  '....KLLLkK......',  // 17
+  '....KLLlkK......',  // 18
+  '....KLLLkK......',  // 19
+  '...KOOOkkK......',  // 20
+  '...KOOOKK.......',  // 21
+  '................',  // 22
+  '................',  // 23
+];
+
+// RIGHT-facing = mirror of left
+const F_RT=F_LT.map(row=>row.split('').reverse().join(''));
+
+function buildSprite(scene,key,bc,hc,ac){
+  // Compute full palette from base colors
+  const dk=(c,a)=>{const r=Math.max(0,((c>>16)&0xff)*a|0),g2=Math.max(0,((c>>8)&0xff)*a|0),b=Math.max(0,(c&0xff)*a|0);return(r<<16)|(g2<<8)|b;};
+  const PALMAP={
+    'K':0x080400, // black outline
+    'S':0xF0C880, // skin
+    'D':0x1A0E04, // pupil dark
+    'W':0xF8F8F0, // eye white
+    'H':hc,
+    'h':dk(hc,0.6),
+    'B':bc,
+    'b':dk(bc,0.65),
+    'A':ac,
+    'a':dk(ac,0.6),
+    'L':dk(bc,0.55),  // legs darker than tunic
+    'l':dk(bc,0.35),
+    'O':0x1A0E04, // shoe (near black)
+    'o':0x2A1808,
+  };
+
+  const FW=16,FH=24;
+  const gfx=scene.make.graphics({x:0,y:0,add:false});
+
+  // 12 frames: dn(0,1,2) up(3,4,5) lt(6,7,8) rt(9,10,11)
+  const BASES=[F_DN,F_DN,F_DN, F_UP,F_UP,F_UP, F_LT,F_LT,F_LT, F_RT,F_RT,F_RT];
+  // step index per frame: 0=neutral,1=stepR,2=stepL
+  const STEPS=[0,1,2, 0,1,2, 0,1,2, 0,1,2];
+
+  for(let fi=0;fi<12;fi++){
+    const base=BASES[fi];
+    const step=STEPS[fi];
+    const ox=fi*FW;
+
+    for(let row=0;row<FH;row++){
+      const line=base[row]||'';
+      // Apply leg/arm walk offset for step frames
+      for(let col=0;col<FW;col++){
+        let ch=line[col]||'.';
+        if(ch==='.')continue;
+
+        // Walk animation: shift left leg up/right leg up on alternating frames
+        // Leg rows are 16-21, left cols 4-6, right cols 9-11
+        let drawRow=row;
+        if(step!==0 && row>=16 && row<=21){
+          const isLeftLeg=(col>=4&&col<=6);
+          const isRightLeg=(col>=9&&col<=11);
+          if(step===1){// right foot forward = left leg back (up 1), right leg fwd (down 1)
+            if(isLeftLeg)drawRow=row-1;
+            if(isRightLeg)drawRow=row+1;
+          } else {// step 2: opposite
+            if(isLeftLeg)drawRow=row+1;
+            if(isRightLeg)drawRow=row-1;
+          }
+          if(drawRow<0||drawRow>=FH)continue;
+        }
+
+        const color=PALMAP[ch];
+        if(!color)continue;
+        gfx.fillStyle(color,1);
+        gfx.fillRect(ox+col, drawRow, 1, 1);
+      }
+    }
+  }
+
+  gfx.generateTexture(key,FW*12,FH);
+  gfx.destroy();
+}
+
+// ═══ PHASER SCENE ═══
+class Market extends Phaser.Scene{
+  constructor(){super('Market');}
+  create(){
+    this.drawMap();
+    // Player — use a placeholder color until resumed with pCiv set
+    const c=pCiv?CIVS[pCiv]:CIVS.mongol;
+    buildSprite(this,'player',c.bc,c.hc,c.ac);
+    this.pl=this.physics.add.sprite(CW/2,CH/2+20,'player');
+    this.pl.setFrame(0).setScale(3).setDepth(10).setCollideWorldBounds(true);
+    this.pl.body.setSize(10,8).setOffset(3,14);
+    this.plLabel=this.add.text(CW/2,CH/2-28,c.e+' You',{fontFamily:'monospace',fontSize:'8px',color:'#e8f8a0',stroke:'#080600',strokeThickness:3,backgroundColor:'rgba(8,6,2,.7)',padding:{x:3,y:1}}).setOrigin(.5).setDepth(21);
+    // Animations — FF6 uses 4-6fps walk cycle
+    ['dn','up','lt','rt'].forEach((k,d)=>this.anims.create({key:k,frames:this.anims.generateFrameNumbers('player',{frames:[d*3,d*3+1,d*3,d*3+2]}),frameRate:6,repeat:-1}));
+    this.anims.create({key:'idle',frames:[{key:'player',frame:0}],frameRate:1});
+    // NPCs — only 3, one per merchant stall, never same civ as player
+    // Fallback map: if player chose that civ, use this substitute
+    const FALLBACK={mali:'swahili',persia:'byzantium',song:'malacca'};
+    this.npcs=[];
+    NPC_POOL.forEach(nd=>{
+      // If player picked this NPC's civ, swap to fallback
+      const npcId=(pCiv&&nd.id===pCiv)?FALLBACK[nd.id]||'morocco':nd.id;
+      const nc=CIVS[npcId];if(!nc)return;
+      const tk='npc_'+npcId;
+      // Only build texture once
+      if(!this.textures.exists(tk))buildSprite(this,tk,nc.bc,nc.hc,nc.ac);
+      const sp=this.physics.add.staticSprite(nd.x,nd.y,tk);
+      sp.setFrame(0).setScale(3).setDepth(9);
+      sp.civId=npcId;sp.talk=nd.t;
+      const nb=this.add.text(nd.x,nd.y-38,nc.e+'\n'+nc.n.split(' ')[0],{
+        fontFamily:'monospace',fontSize:'8px',color:'#f0d080',
+        stroke:'#060400',strokeThickness:3,
+        backgroundColor:'rgba(6,4,0,.78)',padding:{x:3,y:2},align:'center'
+      }).setOrigin(.5).setDepth(20);
+      this.tweens.add({targets:nb,y:nd.y-41,duration:1600,yoyo:true,repeat:-1,ease:'Sine.easeInOut'});
+      this.npcs.push(sp);
+    });
+    // Walls
+    this.walls=this.physics.add.staticGroup();
+    this.buildWalls();
+    this.physics.add.collider(this.pl,this.walls);
+    this.physics.world.setBounds(TILE,TILE,CW-TILE*2,CH-TILE*4);
+    // Keys
+    this.keys=this.input.keyboard.addKeys({w:87,s:83,a:65,d:68,t:84,shift:16,i:73,esc:27});
+    this.cameras.main.setBounds(0,0,CW,CH).startFollow(this.pl,true,.1,.1);
+    this.dir='dn';this.near=null;this.tWas=false;
+  }
+  drawMap(){
+    const g=this.add.graphics().setDepth(0);
+    // Floor base
+    g.fillStyle(0x3A2810,1);g.fillRect(0,0,CW,CH);
+    for(let r=0;r<MH;r++)for(let c=0;c<MW;c++){
+      const x=c*TILE,y=r*TILE,edge=r<1||r>=MH-3||c<1||c>=MW-1;
+      if(edge){g.fillStyle(0x221408,1);g.fillRect(x,y,TILE,TILE);}
+      else{g.fillStyle((r+c)%2===0?0x5A4228:0x6A4E30,1);g.fillRect(x,y,TILE,TILE);g.fillStyle(0x000000,.1);g.strokeRect(x,y,TILE,TILE);}
+    }
+    // Stalls
+    const ST=[
+      {x:238,y:148,w:128,h:52,col:0xC8902A},{x:453,y:148,w:128,h:52,col:0x8B1818},
+      {x:98,y:258,w:88,h:52,col:0x7A2870},{x:623,y:268,w:78,h:52,col:0x406A28},
+      {x:323,y:358,w:128,h:52,col:0x1A6A5A},{x:453,y:402,w:98,h:48,col:0x6A4820},
+      {x:173,y:123,w:98,h:48,col:0x8A1030},{x:516,y:358,w:83,h:48,col:0x8A5010},
+    ];
+    ST.forEach(s=>{
+      g.fillStyle(0x0A0600,.45);g.fillRect(s.x+4,s.y+4,s.w,s.h);
+      g.fillStyle(0x2A1A08,1);g.fillRect(s.x,s.y,s.w,s.h);
+      g.fillStyle(s.col,1);g.fillRect(s.x,s.y,s.w,15);
+      g.fillStyle(0xFFFFFF,.13);for(let i=0;i<s.w;i+=10)g.fillRect(s.x+i,s.y,5,15);
+      g.fillStyle(s.col,1);for(let i=0;i<s.w;i+=9){const tx=s.x+i;g.fillTriangle(tx,s.y+15,tx+9,s.y+15,tx+4,s.y+21);}
+      g.fillStyle(0x7A5828,1);g.fillRect(s.x,s.y+s.h-10,s.w,10);
+      g.fillStyle(0x9A7038,1);g.fillRect(s.x,s.y+s.h-10,s.w,3);
+    });
+    // Fountain
+    const fx=CW/2,fy=CH/2+22;
+    g.fillStyle(0x2A1808,1);g.fillCircle(fx,fy,42);
+    g.fillStyle(0x1A5A9A,1);g.fillCircle(fx,fy,32);
+    g.fillStyle(0x2A7ACC,1);g.fillCircle(fx,fy,20);
+    g.fillStyle(0x8AC8F0,.55);g.fillCircle(fx,fy,10);
+    g.lineStyle(3,0x8A6830,1);g.strokeCircle(fx,fy,42);
+    // Torches
+    [[78,78],[CW-78,78],[78,CH-118],[CW-78,CH-118]].forEach(([tx,ty])=>{
+      g.fillStyle(0x6A3810,1);g.fillRect(tx-3,ty-16,6,20);
+      g.fillStyle(0xFF7010,1);g.fillCircle(tx,ty-20,6);
+      g.fillStyle(0xFFCC30,.65);g.fillCircle(tx,ty-23,4);
+      g.fillStyle(0xFF8020,.1);g.fillCircle(tx,ty-20,18);
+    });
+    // Stall signs text
+    const labels=['Eastern Silks','African Gold','Persian Arts','Spice Bazaar','Swahili Exports','Island Spices','Byzantine Luxuries','Saharan Caravan'];
+    ST.forEach((s,i)=>{this.add.text(s.x+s.w/2,s.y+s.h-18,labels[i]||'',{fontFamily:'monospace',fontSize:'7px',color:'#f0d080',stroke:'#0A0600',strokeThickness:3,align:'center'}).setOrigin(.5,.5).setDepth(5);});
+    // Fountain label
+    this.add.text(fx,fy+52,'Grand Bazaar',{fontFamily:'Cinzel,serif',fontSize:'8px',color:'#c8902a',stroke:'#0A0600',strokeThickness:3}).setOrigin(.5,.5).setDepth(5);
+  }
+  buildWalls(){
+    for(let c=0;c<MW;c++){this.aw(c*TILE+TILE/2,TILE/2);this.aw(c*TILE+TILE/2,(MH-3)*TILE+TILE/2);}
+    for(let r=0;r<MH;r++){this.aw(TILE/2,r*TILE+TILE/2);this.aw((MW-1)*TILE+TILE/2,r*TILE+TILE/2);}
+    [{x:302,y:148,w:128},{x:517,y:148,w:128},{x:142,y:258,w:88},{x:662,y:268,w:78},
+     {x:387,y:358,w:128},{x:502,y:402,w:98},{x:222,y:123,w:98},{x:558,y:358,w:83}
+    ].forEach(w=>{const wl=this.walls.create(w.x,w.y,null).setVisible(false);wl.setDisplaySize(w.w,10);wl.refreshBody();});
+  }
+  aw(x,y){const w=this.walls.create(x,y,null).setVisible(false);w.setDisplaySize(TILE,TILE);w.refreshBody();}
+  update(){
+    if(!pCiv)return;
+    if(tradeOpen){this.pl.setVelocity(0,0);return;}
+    const {w,s,a,d,t,shift,i}=this.keys;
+    const SPD=110;let vx=0,vy=0;
+    if(a.isDown){vx=-SPD;this.dir='lt';}
+    if(d.isDown){vx= SPD;this.dir='rt';}
+    if(w.isDown){vy=-SPD;this.dir='up';}
+    if(s.isDown){vy= SPD;this.dir='dn';}
+    // diagonal normalise
+    if(vx&&vy){vx*=0.707;vy*=0.707;}
+    this.pl.setVelocity(vx,vy);
+    if(vx||vy)this.pl.anims.play(this.dir,true);
+    else this.pl.anims.play('idle',true);
+    // Move player label
+    this.plLabel.setPosition(this.pl.x,this.pl.y-32);
+    // NPC proximity
+    let best=null,bd=Infinity;
+    this.npcs.forEach(n=>{const dd=Phaser.Math.Distance.Between(this.pl.x,this.pl.y,n.x,n.y);if(dd<72&&dd<bd){bd=dd;best=n;}});
+    if(best!==this.near){
+      this.near=best;nearNPC=best;
+      if(best){const nc=CIVS[best.civId];setMsg(`${nc.e} ${nc.n}: "${best.talk.substring(0,58)}..." — Press Shift+T to trade`);}
+      else setMsg('Walk up to a merchant stall and press Shift+T to trade');
+    }
+    const td=t.isDown&&shift.isDown;
+    if(td&&!this.tWas){if(this.near)openTrade(this.near.civId);else setMsg('⚠ Move closer to a merchant first!');}
+    this.tWas=td;
+    if(Phaser.Input.Keyboard.JustDown(i))toggleInv();
+    if(Phaser.Input.Keyboard.JustDown(this.keys.esc)){if(invOpen)toggleInv();if(tradeOpen)closeTrade();}
+  }
+}
+
+const game=new Phaser.Game({
+  type:Phaser.CANVAS,canvas:document.getElementById('gameCanvas'),
+  width:CW,height:CH,
+  physics:{default:'arcade',arcade:{gravity:{y:0},debug:false}},
+  scene:Market,backgroundColor:'#2A1808',pixelArt:true,antialias:false,
+  callbacks:{postBoot:g=>{
+    // Pause immediately so scene waits for civ selection
+    setTimeout(()=>g.scene.scenes[0].scene.pause(),100);
+  }}
+});
+
+// ═══ HUD ═══
+function updateHUD(){
+  if(!pCiv)return;
+  const c=CIVS[pCiv];
+  document.getElementById('hregion').textContent=c.r;
+  document.getElementById('hciv').textContent=c.e+' '+c.n;
+  document.getElementById('hcoins').textContent=pCoins;
+  document.getElementById('hcargo').textContent=pInv.reduce((s,i)=>s+i.q,0)+' items';
+  document.getElementById('tcoins').textContent=pCoins;
+}
+function setMsg(m){document.getElementById('bmsg').textContent=m;}
+function toggleInv(){invOpen=!invOpen;document.getElementById('invPanel').classList.toggle('open',invOpen);if(invOpen)renderInv();}
+function renderInv(){
+  const el=document.getElementById('invrows');
+  const items=pInv.filter(i=>i.q>0);
+  if(!items.length){el.innerHTML='<div class="ie">Empty</div>';return;}
+  el.innerHTML=items.map(i=>`<div class="ir"><span style="font-size:12px;">${i.e}</span><span style="flex:1;">${i.n}</span><span style="color:#e8b85a;font-weight:700;">×${i.q}</span></div>`).join('');
+}
+
+// ═══ TRADE ═══
+function openTrade(civId){
+  curNPC=civId;tradeOpen=true;selBuy=null;selSell=null;
+  const nc=CIVS[civId];
+  const nd=NPCS.find(n=>n.id===civId)||{};
+  document.getElementById('tnpcinfo').innerHTML=`<div class="tnpc"><div class="tnpce">${nc.e}</div><div><div class="tnn">${nc.n}</div><div class="tnr">${nc.r} · c. 1200–1450 CE</div><div class="tnd">"${nd.t||'Welcome, traveler!'}"</div></div></div>`;
+  updateHUD();document.getElementById('tres').style.display='none';
+  buildBuy(civId);buildSell(civId);
+  document.getElementById('tw').classList.add('open');
+}
+function buildBuy(civId){
+  const el=document.getElementById('tbuylist');
+  el.innerHTML=npcGoods[civId].map((it,i)=>`<div class="ti" id="b${i}" onclick="pickBuy(${i})"><span class="te">${it.e}</span><div class="tin"><div class="tn">${it.n}</div><div class="tf">From ${CIVS[civId].r}</div></div><span class="tq">×${it.q}</span><span class="tp" style="color:#f0d040;">🪙${it.v}</span></div>`).join('');
+  el.innerHTML+=`<button class="tbtn tbuy" id="buybtn" onclick="doBuy()" disabled>Select a good to buy</button>`;
+}
+function buildSell(civId){
+  const el=document.getElementById('tselllist');
+  const items=pInv.filter(i=>i.q>0);
+  if(!items.length){el.innerHTML='<div style="font-size:9px;color:#4a3820;padding:6px;">Your inventory is empty.</div>';return;}
+  el.innerHTML=items.map((it,i)=>{
+    const bon=it.fc!==civId?1.25:.75,sp=Math.floor(it.v*bon);
+    return`<div class="ti" id="s${i}" onclick="pickSell(${i},${sp})"><span class="te">${it.e}</span><div class="tin"><div class="tn">${it.n}</div><div class="tf">From ${CIVS[it.fc]?.n||'Unknown'}</div></div><span class="tq">×${it.q}</span><span class="tp" style="color:${bon>1?'#90d870':'#d07050'};">🪙${sp}</span></div>`;
+  }).join('');
+  el.innerHTML+=`<button class="tbtn tsel" id="sellbtn" onclick="doSell()" disabled>Select a good to sell</button>`;
+}
+function pickBuy(i){selBuy=i;document.querySelectorAll('#tbuylist .ti').forEach((r,ri)=>r.classList.toggle('sel',ri===i));const it=npcGoods[curNPC][i];const btn=document.getElementById('buybtn');btn.textContent=`Buy 1× ${it.e} ${it.n} — 🪙${it.v}`;btn.disabled=false;}
+function pickSell(i,p){selSell={i,p};document.querySelectorAll('#tselllist .ti').forEach((r,ri)=>r.classList.toggle('sel',ri===i));const it=pInv.filter(x=>x.q>0)[i];const btn=document.getElementById('sellbtn');btn.textContent=`Sell 1× ${it.e} ${it.n} — 🪙${p}`;btn.disabled=false;}
+function doBuy(){
+  if(selBuy===null)return;
+  const it=npcGoods[curNPC][selBuy];
+  if(pCoins<it.v){showRes('❌ Not enough coins!',true);return;}
+  if(it.q<=0){showRes('❌ Out of stock!',true);return;}
+  pCoins-=it.v;it.q--;
+  const ex=pInv.find(x=>x.n===it.n&&x.fc===curNPC);
+  if(ex)ex.q++;else pInv.push({...it,q:1,fc:curNPC});
+  updateHUD();renderInv();buildBuy(curNPC);buildSell(curNPC);
+  showRes(`✦ Bought 1× ${it.e} ${it.n} for 🪙${it.v}\nYour coins: 🪙${pCoins}`);toast(`Bought ${it.e} ${it.n}!`);selBuy=null;
+}
+function doSell(){
+  if(!selSell)return;
+  const {i,p}=selSell;const items=pInv.filter(x=>x.q>0);const it=items[i];if(!it)return;
+  it.q--;if(it.q<=0)pInv=pInv.filter(x=>x.q>0);
+  pCoins+=p;updateHUD();renderInv();buildSell(curNPC);
+  showRes(`✦ Sold 1× ${it.e} ${it.n} for 🪙${p}\nYour coins: 🪙${pCoins}`);toast(`Sold ${it.e} ${it.n} for 🪙${p}!`);selSell=null;
+}
+function showRes(msg,err=false){const el=document.getElementById('tres');el.style.display='block';el.className='tres '+(err?'terr':'tok');el.innerHTML=msg.replace(/\n/g,'<br>');}
+function closeTrade(){tradeOpen=false;document.getElementById('tw').classList.remove('open');}
+document.getElementById('tw').addEventListener('click',e=>{if(e.target===document.getElementById('tw'))closeTrade();});
+function toast(msg){document.querySelectorAll('.toast').forEach(t=>t.remove());const el=document.createElement('div');el.className='toast';el.textContent=msg;document.getElementById('shell').appendChild(el);setTimeout(()=>el.remove(),2200);}
+window.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();});
+window.addEventListener('message',e=>{if(e.data?.type==='setCiv'&&CIVS[e.data.civ]){pCiv=e.data.civ;document.querySelectorAll('.csc').forEach(x=>x.classList.remove('on'));const el=document.getElementById('cs_'+pCiv);if(el){el.classList.add('on');document.getElementById('cssbtn').disabled=false;}}});
+</script>
+</body>
+</html>
